@@ -1,0 +1,25 @@
+# Should tier: DQN with R* and the shield
+run_name: dqn_rstar_shield
+algo: dqn
+reward: r3
+reward_kwargs: {lambda1: 5.0, lambda2: 10.0}
+obs_mode: full
+shield: true
+total_timesteps: 1000000     # 10^6 transitions (days)
+n_envs: 8
+seed: 0                       # override with --seed 0..4
+eval_freq: 50000              # transitions between validation evaluations
+selection_scenarios_per_patient: 2
+output_dir: runs
+dqn:                          # three deliberate changes vs SB3 defaults (Table VI)
+  learning_rate: 1.0e-4
+  buffer_size: 100000
+  batch_size: 64
+  target_update_interval: 1000
+  train_freq: 4
+  learning_starts: 1000
+  exploration_fraction: 0.1
+  exploration_final_eps: 0.05
+  gamma: 0.99
+  net_arch: [64, 64]
+  activation: relu

@@ -1,0 +1,16 @@
+# Tiny run used by CI and the quickstart: checks that the pipeline works end to end.
+run_name: smoke
+algo: ppo
+reward: r3
+reward_kwargs: {lambda1: 5.0, lambda2: 10.0}
+obs_mode: full
+shield: true
+total_timesteps: 2048
+n_envs: 2
+seed: 0
+eval_freq: 100000
+selection_scenarios_per_patient: 1
+output_dir: runs
+ppo:
+  n_steps: 256
+  batch_size: 64
