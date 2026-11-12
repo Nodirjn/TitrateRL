@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "TitrateRL: Simulation-Based Reinforcement Learning for Personalized Basal Insulin Titration in Type 2 Diabetes"
+version: 0.1.0.dev0
+date-released: 2026-11-12
+license: MIT
+authors:
+  - given-names: Boburmirzo
+    family-names: Uchqunov
+  - given-names: Nodirjon
+    family-names: Khabibullaev
+  - given-names: Ibrohim
+    family-names: Abralov
+  - given-names: Abdurashid
+    family-names: Abdusattarov
+keywords: [reinforcement learning, gymnasium, type 2 diabetes, insulin titration, simulation]
