@@ -1,0 +1,9 @@
+# Quick look at the clinical baselines on the validation cohort (1 scenario).
+split: val
+n_scenarios: 1
+base_seed: 7
+rule_policies: [b0_fixed, b1_atlantus, b2_treat_to_target, b3_insight]
+checkpoints: []
+primary_policy: null
+output_dir: results/baselines_quick
+log_trajectories: false

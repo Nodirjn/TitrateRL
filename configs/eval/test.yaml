@@ -1,0 +1,13 @@
+# Phase 3 (Algorithm 1): every policy on the 30 test patients x 10 scenarios, CRN.
+split: test
+n_scenarios: 10
+base_seed: 7
+rule_policies: [b0_fixed, b1_atlantus, b2_treat_to_target, b3_insight]
+# Add trained agents after phase 2, e.g.
+# checkpoints:
+#   - {policy_id: ppo_rstar_shield_s0, path: runs/ppo_rstar_shield_s0/best_model.zip,
+#      algo: ppo, obs_mode: full, shield: true}
+checkpoints: []
+primary_policy: null          # e.g. ppo_rstar_shield_s0 -> writes h2.json
+output_dir: results/test
+log_trajectories: false       # true -> 5-min Parquet trajectories (large)
