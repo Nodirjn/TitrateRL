@@ -1,0 +1,23 @@
+# Virtual cohort (proposal Section IV-C2). Reproducible from `seed`.
+# Distributions are the starting point of the Week 4-5 calibration (check V4).
+n_patients: 150
+n_train: 90
+n_val: 30
+n_test: 30
+seed: 2026
+fpg:            # pre-insulin fasting plasma glucose Gb (mg/dL), truncated normal
+  mean: 196.0
+  sd: 48.0
+  low: 140.0
+  high: 300.0
+body_weight:    # kg, truncated normal
+  mean: 90.0
+  sd: 18.0
+  low: 50.0
+  high: 150.0
+rho_si:         # insulin-sensitivity factor (scales Vmx, kp3), log-normal
+  median: 2.2   # first calibration pass, see docs/validation.md
+  sigma: 0.35
+rho_beta:       # beta-cell factor (scales beta, K), log-normal
+  median: 1.0
+  sigma: 0.30
