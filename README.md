@@ -4,7 +4,7 @@
 
 **Simulation-based reinforcement learning for personalized basal insulin titration in Type 2 diabetes**
 
-[![CI](https://github.com/titraterl/titraterl/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![CI](https://github.com/Nodirjn/TitrateRL/actions/workflows/ci.yml/badge.svg)](https://github.com/Nodirjn/TitrateRL/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-pre--M1%20(alpha)-orange)
@@ -90,8 +90,8 @@ V5 documented. Run `titraterl validate` for the current report.
 Requirements: Python ≥ 3.10, about 2 GB of disk for PyTorch (CPU build is enough).
 
 ```bash
-git clone https://github.com/<your-org>/titraterl.git
-cd titraterl
+git clone https://github.com/Nodirjn/TitrateRL.git
+cd TitrateRL
 python -m venv .venv
 source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install --upgrade pip
@@ -103,6 +103,12 @@ CPU-only PyTorch (smaller download):
 ```bash
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -e ".[dev,dashboard]"
+```
+
+Or install the package only, without cloning:
+
+```bash
+pip install "titraterl @ git+https://github.com/Nodirjn/TitrateRL.git"
 ```
 
 Check the installation:
@@ -259,7 +265,7 @@ Metrics and statistics: [docs/evaluation.md](docs/evaluation.md). Log format:
 ## 7. Repository structure
 
 ```text
-titraterl/
+TitrateRL/
 ├── src/titraterl/
 │   ├── simulation/        # L5  parameters, ODE + RK4 (Numba), meals, sensors, VirtualPatient
 │   ├── cohort/            # L6  virtual cohort generator, split, Parquet I/O
@@ -275,6 +281,7 @@ titraterl/
 ├── configs/               # cohort, training and evaluation YAML files
 ├── tests/                 # unit + integration tests (pytest)
 ├── docs/                  # architecture, model, environment, evaluation, validation, ...
+│   └── course/            # course reports (Week 10 IEEE report)
 ├── examples/              # quickstart script and notebook
 ├── .github/               # CI workflow, issue and pull-request templates
 ├── MODEL_CARD.md          # intended use and limitations

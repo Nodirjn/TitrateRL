@@ -46,8 +46,11 @@ dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.5", "pre-commit>=3.6", "mypy>=1.9"
 titraterl = "titraterl.cli:main"
 
 [project.urls]
-Documentation = "https://github.com/titraterl/titraterl/tree/main/docs"
-Issues = "https://github.com/titraterl/titraterl/issues"
+Homepage = "https://github.com/Nodirjn/TitrateRL"
+Repository = "https://github.com/Nodirjn/TitrateRL"
+Documentation = "https://github.com/Nodirjn/TitrateRL/tree/main/docs"
+Issues = "https://github.com/Nodirjn/TitrateRL/issues"
+Changelog = "https://github.com/Nodirjn/TitrateRL/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -4,6 +4,8 @@ title: "TitrateRL: Simulation-Based Reinforcement Learning for Personalized Basa
 version: 0.1.0.dev0
 date-released: 2026-11-12
 license: MIT
+repository-code: "https://github.com/Nodirjn/TitrateRL"
+url: "https://github.com/Nodirjn/TitrateRL"
 authors:
   - given-names: Boburmirzo
     family-names: Uchqunov

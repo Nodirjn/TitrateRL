@@ -1,5 +1,15 @@
-# Replace the placeholders with the members' GitHub handles (see docs/development.md).
-# /src/titraterl/simulation/   @ibrohim-abralov
-# /src/titraterl/envs/         @abdurashid-abdusattarov
-# /src/titraterl/evaluation/   @nodirjon-khabibullaev
-# /dashboard/                  @boburmirzo-uchqunov
+# Code owners are requested automatically as reviewers on pull requests.
+# Add the other members' GitHub handles below (see docs/development.md, "Code ownership").
+
+# Default owner (team lead)
+*                               @Nodirjn
+
+# /src/titraterl/simulation/    @<ibrohim-handle>
+# /src/titraterl/cohort/        @<ibrohim-handle>
+# /src/titraterl/validation/    @<ibrohim-handle>
+# /src/titraterl/envs/          @<abdurashid-handle>
+# /src/titraterl/training/      @<abdurashid-handle>
+# /src/titraterl/evaluation/    @Nodirjn
+# /src/titraterl/metrics/       @Nodirjn
+# /dashboard/                   @<boburmirzo-handle>
+# /.github/                     @<boburmirzo-handle>
