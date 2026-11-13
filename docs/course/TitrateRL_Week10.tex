@@ -42,8 +42,8 @@
 
 \begin{document}
 
-\title{TitrateRL: IMRaD Outline, Deployment, Repository Structure, Class Diagram and MVP of a
-Simulation-Based Reinforcement Learning Framework for Basal Insulin Titration}
+\title{TitrateRL: A Simulation-Based Reinforcement Learning Approach for Personalized Basal
+Insulin Titration in Type 2 Diabetes}
 
 \author{
 \IEEEauthorblockN{Boburmirzo Uchqunov}
@@ -65,90 +65,87 @@ Team TitrateRL \quad Supervisor: Dr.\ Eugene Castro \quad November 2026}
 \maketitle
 
 \begin{abstract}
-TitrateRL is an open, simulation-based framework in which reinforcement learning (RL) agents
-learn to titrate a once-daily basal insulin dose for virtual adults with Type~2 diabetes (T2D)
-and are compared with clinical titration algorithms. This report gives the one-page IMRaD
-outline of the study, the deployment map, the repository file structure and the class diagram of
-the implemented software, and the minimum viable product (MVP) defined with the MoSCoW method,
-together with the metrics used to accept the product and to answer the research questions. The
-software for every MVP feature is implemented and tested (84 automated tests); the simulator
-passes four of the five verification checks, cohort calibration is still open, and the agent
-experiments have not been run yet. All work is \emph{in silico} and not intended for clinical
-use. Code: \url{https://github.com/Nodirjn/TitrateRL}.
+Basal insulin in Type~2 diabetes (T2D) is titrated with population-level rules that apply the
+same fasting-glucose thresholds to every patient, and no open, reinforcement-learning-ready
+environment exists to test whether learned policies can do better safely. This paper presents
+TitrateRL, an open-source framework that combines a calibrated virtual T2D cohort, a Gymnasium
+environment for daily basal-insulin titration, Proximal Policy Optimization agents with a
+rule-based safety shield, and a pre-specified evaluation against three clinical titration
+algorithms. The methods section describes the system architecture, deployment, repository
+structure, class design and the minimum viable product defined with the MoSCoW method. The
+software is implemented and tested; the experimental results are reported in the final version.
+All work is in silico and not intended for clinical use. Code:
+\url{https://github.com/Nodirjn/TitrateRL}.
 \end{abstract}
 
 \begin{IEEEkeywords}
-reinforcement learning, Type 2 diabetes, basal insulin titration, Gymnasium, MVP, MoSCoW
+reinforcement learning, Type 2 diabetes, basal insulin titration, in silico simulation, safe RL,
+Gymnasium
 \end{IEEEkeywords}
 
 % =====================================================================================
-\section{IMRaD Outline}
-\label{sec:imrad}
+\section{Introduction}
 
-\subsection{Introduction}
-\begin{itemize}
-\item \textbf{Context.} 589 million adults live with diabetes, over 90\% with T2D. Basal
-insulin (e.g., glargine) is started at 10~U/day and titrated by fasting glucose; at +2~U every
-3~days reaching 50~U takes 60~days, and 81\% of patients remain above their HbA1c target after
-six months.
-\item \textbf{Gap.} Clinical algorithms use one rule for everyone; 24 of 29 RL glucose-control
-studies address Type~1 diabetes; no open, RL-ready environment for daily T2D basal titration
-exists.
-\item \textbf{Aim.} Build an open benchmark and test whether a learned, shielded policy titrates
-better than clinical rules. \textbf{RQ1}: effect of the reward (R1 time in range, R2 risk index,
-R3 TIR with hypoglycemia penalties). \textbf{RQ2}: $\geq$5~pp more time in range than
-AT.LANTUS, Treat-to-Target and INSIGHT with non-inferior hypoglycemia. \textbf{RQ3}: dependence
-of the benefit on hidden insulin sensitivity.
-\end{itemize}
+\subsection{Background}
+An estimated 589 million adults lived with diabetes in 2024, and over 90\% of them have Type~2
+diabetes (T2D) \cite{idf2025}. When non-insulin agents no longer reach the glycemic target, a
+once-daily long-acting basal insulin such as insulin glargine is commonly added. Its dose is
+titrated: guidelines recommend starting at 10~U/day and increasing the dose, for example by 2~U
+every three days, until the fasting plasma glucose (FPG) reaches 80--130~mg/dL
+\cite{ada2026pharm,ada2026goals}. Such algorithms were validated in large trials
+\cite{riddle2003,davies2005,gerstein2006}, but in routine care up-titration is slow: in a
+large real-world cohort, 81\% of patients remained above their HbA1c target six months after
+starting basal insulin \cite{mocarski2018}. Continuous glucose monitoring (CGM) now provides
+consensus metrics such as time in range (TIR, 70--180~mg/dL) \cite{battelino2019}, and
+physiological simulators are accepted for preclinical testing of insulin-dosing algorithms
+\cite{kovatchev2009}.
 
-\subsection{Methods}
-\begin{itemize}
-\item \textbf{Simulator.} Dalla Man T2D meal model (15 ODE states, RK4, 1-min step, Numba) with
-endogenous secretion, two-compartment glargine absorption, meals, CGM and fingerstick noise.
-\item \textbf{Cohort.} 150 virtual adults (fasting glucose, weight, insulin-sensitivity and
-$\beta$-cell factors), split 90/30/30 by insulin-sensitivity tertile; calibrated against the
-Treat-to-Target trial.
-\item \textbf{Decision problem.} Partially observable MDP, one step per day, 168-day episodes;
-observation = 3-day stack of 11 features; action $\in\{-4,-2,0,+2,+4\}$~U; weekly rate limit
-8~U, dose $\leq 1$~U/kg.
-\item \textbf{Agents and baselines.} PPO (primary) and DQN (Stable-Baselines3), $10^6$ days per
-run, 5 seeds; rule-based safety shield; baselines B0 (fixed), B1--B3 (clinical), B4 (tuned).
-\item \textbf{Evaluation.} 30 unseen patients $\times$ 10 scenarios with common random numbers;
-noise-free endpoints; one-sided Wilcoxon with Holm correction, Hodges--Lehmann estimate,
-bootstrap CIs, Spearman correlation.
-\end{itemize}
+\subsection{Problem and Motivation}
+Clinical titration algorithms apply one fasting-glucose rule to every patient, although
+insulin needs differ widely and lower body-mass index and lower doses predict hypoglycemia
+\cite{karl2013}. Reinforcement learning (RL) suits sequential dosing decisions with delayed
+effects \cite{sutton2018}, but of 29 RL glucose-control studies in a systematic review, 24
+addressed Type~1 diabetes and only 2 addressed T2D alone \cite{tejedor2020}. Existing T2D
+approaches use non-public hospital data \cite{wang2023} or commercial simulators
+\cite{panagiotou2025}, and open simulators either contain only Type~1 patients
+\cite{simglucose} or keep the basal dose fixed \cite{kwon2026}. Hidden insulin sensitivity,
+delayed effects and asymmetric risk make daily titration a safety-constrained partially
+observable Markov decision process (POMDP).
 
-\subsection{Results (status and expected outputs)}
+\subsection{Research Questions and Objectives}
+The general objective is to design, implement and evaluate within 14 weeks an open-source,
+simulation-based RL framework for daily basal-insulin titration in virtual patients with T2D,
+benchmarked against clinical titration algorithms with consensus glycemic metrics.
 \begin{itemize}
-\item \textbf{Achieved.} All MVP software implemented; 84 tests pass; one 168-day episode runs
-in $\approx$0.15~s; PPO trains at $\approx$690 steps/s ($\approx$25~min per $10^6$ steps).
-\item \textbf{Verification.} V1 (integrator, equilibrium, dose--response, identical right-hand
-side to \texttt{simglucose}) and V2 (flat glargine profile) pass; V4 calibration fails on
-fasting glucose (99.6 vs.\ 117~mg/dL in the trial) while the final dose matches (0.57 vs.\
-0.48~U/kg).
-\item \textbf{Preliminary software check} (validation patients, one scenario): clinical rules
-reach a median maintenance TIR of 60--63\% vs.\ 39\% without titration.
-\item \textbf{Expected.} Tables of TIR/TBR per reward (RQ1), H2 decision table vs.\ B1--B3
-(RQ2), correlation and dose-behaviour plots by insulin-sensitivity tertile (RQ3).
-\end{itemize}
-
-\subsection{Discussion (planned)}
-\begin{itemize}
-\item Interpret efficacy--safety trade-offs of the rewards and the value of CGM features (PPO vs.\
-FPG-only PPO) and of learning vs.\ tuning (vs.\ B4).
-\item \textbf{Limitations.} No glucagon (hypoglycemia interpreted comparatively); single-meal
-model extrapolated to 24 weeks; perfect adherence; calibration gap; sim-to-real gap.
-\item \textbf{Contribution.} Open benchmark \texttt{TitrateRL/T2D-v0}, pre-specified comparison,
-analysis of personalization. Not a medical device.
+\item \textbf{RQ1 / SO1:} How does the reward formulation (R1 time in range, R2 risk index, R3
+time in range with hypoglycemia penalties) change the trade-off between time in range and time
+below range? \emph{H1: R3 lowers TBR$_{<70}$ at comparable TIR.}
+\item \textbf{RQ2 / SO2:} Does a shielded PPO policy achieve a higher maintenance-phase TIR than
+the AT.LANTUS, Treat-to-Target and INSIGHT algorithms on unseen patients while remaining
+non-inferior in time below range? \emph{H2: gain $\geq$5~pp, non-inferiority margin 1~pp.}
+\item \textbf{RQ3 / SO3:} Does the benefit depend on insulin sensitivity, and does one policy
+personalize its dosing? \emph{H3: negative correlation with insulin sensitivity.}
 \end{itemize}
 
 % =====================================================================================
-\section{Deployment Map}
-\label{sec:deploy}
+\section{Methods}
 
-Fig.~\ref{fig:deploy} shows where each part of TitrateRL runs and how artifacts move. TitrateRL
-has no server back end and handles no personal data: the only deployed units are the Python
-package, the experiment runs and the Streamlit dashboard.
+\subsection{Development Methodology}
+The project follows an iterative, Scrum-inspired process with two-week sprints, a backlog in
+GitHub Projects and supervisor reviews at milestones M1--M4. The simulator, wrappers and metrics
+are developed test-first with \texttt{pytest}; GitHub Flow with a protected \texttt{main} branch,
+reviewed pull requests and continuous integration (ruff linting and tests on Python 3.10--3.12)
+is used. Every experiment is a version-controlled YAML file with fixed seeds, and results are
+stored with the commit hash that produced them.
+
+\subsection{System Architecture and Deployment}
+TitrateRL follows a layered architecture in which each layer depends only on the layers below
+it: configuration and data, simulation core, environment, decision, experiment and evaluation,
+and presentation. Fig.~\ref{fig:deploy} shows where each part runs. Code flows from the team's
+workstations through pull requests and CI to tagged releases; experiments run on a multi-core
+CPU machine from a pinned commit; trained models and result tables are published as release
+assets and consumed by the dashboard and by researchers who install the package. The system has
+no server back end and handles no personal data.
 
 \begin{figure*}[t]
 \centering
@@ -198,26 +195,11 @@ dashboard and by researchers who install the package.}
 \label{fig:deploy}
 \end{figure*}
 
-\begin{itemize}
-\item \textbf{Repository.} \url{https://github.com/Nodirjn/TitrateRL} (MIT license).
-\item \textbf{Environments.} \emph{Development}: each member's laptop. \emph{CI}: GitHub-hosted
-Ubuntu runners, CPU-only PyTorch. \emph{Experiments}: one multi-core CPU machine (no GPU needed;
-the networks are $2\times64$ MLPs). \emph{Presentation}: local Streamlit server.
-\item \textbf{Reproducibility contract.} A run is identified by its YAML file, seed and commit
-hash, recorded in \texttt{run.json}; dependencies are pinned; data and models travel as release
-assets.
-\item \textbf{Safety.} The dashboard accepts only virtual-patient identifiers and labels every
-output as a simulation result.
-\end{itemize}
-
-% =====================================================================================
-\section{Repository File Structure}
-\label{sec:repo}
-
-The repository (Fig.~\ref{fig:tree}) follows the \texttt{src} layout and mirrors the six
-architecture layers: configuration and data, simulation core, environment, decision,
-evaluation, and presentation. Experiment outputs (\texttt{data/}, \texttt{runs/},
-\texttt{results/}, \texttt{reports/}) are generated and git-ignored.
+\subsection{Repository Structure}
+The repository (Fig.~\ref{fig:tree}) follows the \texttt{src} layout and mirrors the
+architecture layers. Generated outputs (\texttt{data/}, \texttt{runs/}, \texttt{results/},
+\texttt{reports/}) are git-ignored; milestones are tagged \texttt{v0.1-env},
+\texttt{v0.2-agents}, \texttt{v0.3-eval} and \texttt{v1.0-mvp}.
 
 \begin{figure}[t]
 \centering
@@ -255,21 +237,13 @@ $\approx$800 lines of tests).}
 \label{fig:tree}
 \end{figure}
 
-\textbf{Conventions.} GitHub Flow with a protected \texttt{main}; Conventional Commits; one
-reviewer per pull request; CI runs ruff and pytest on Python 3.10--3.12; every experiment is a
-YAML file; milestones are tags \texttt{v0.1-env}, \texttt{v0.2-agents}, \texttt{v0.3-eval},
-\texttt{v1.0-mvp}.
-
-% =====================================================================================
-\section{Class Diagram}
-\label{sec:classes}
-
+\subsection{Class Design}
 Fig.~\ref{fig:classes} shows the main classes. \texttt{T2DTitrationEnv} composes a
 \texttt{VirtualPatient}, which owns the parameter vector, the ODE state and three random streams
-(meals, CGM, fingerstick) for common random numbers. Rule-based baselines and RL agents share one
-abstract \texttt{Policy} interface, so the evaluator, the statistics module and the dashboard
-treat them identically. \texttt{SafetyShield} is a Gymnasium wrapper applied only to RL agents;
-the rate limit and dose bounds live in the environment and apply to every policy.
+(meals, CGM, fingerstick) so that all policies can be evaluated with common random numbers.
+Rule-based baselines and RL agents share one abstract \texttt{Policy} interface;
+\texttt{SafetyShield} is a Gymnasium wrapper applied only to RL agents, whereas the rate limit
+and dose bounds apply to every policy.
 
 \begin{figure*}[t]
 \centering
@@ -352,51 +326,56 @@ dependency. B1, B3 and B4 inherit from \texttt{\_IntervalRule}; B2 from \texttt{
 \label{fig:classes}
 \end{figure*}
 
-% =====================================================================================
-\section{MVP Definition (MoSCoW) and Metrics}
-\label{sec:mvp}
+\subsection{Virtual Patient Model and Cohort}
+The patient is described by the meal simulation model of Dalla Man \emph{et al.} with its
+published T2D parameters \cite{dallaman2007,dallaman2007gim}. The glucose, insulin and gut
+subsystems are adapted from the open-source \texttt{simglucose} implementation \cite{simglucose}
+and extended with $\beta$-cell secretion, time-varying hepatic insulin extraction and a
+two-compartment subcutaneous glargine model \cite{schiavon2020,lepore2000}. The 15-state system
+is integrated with a fixed-step fourth-order Runge--Kutta scheme (1-min step) compiled with
+Numba \cite{lam2015}. Each simulated day contains three meals with random timing and size and
+an optional snack; glucose is observed by a CGM every 5~min with the noise model of Breton and
+Kovatchev \cite{breton2008} and by a fasting fingerstick at 07:00 with ISO 15197:2013-compatible
+error \cite{iso15197}. A cohort of 150 virtual adults with varied pre-insulin FPG, body weight,
+insulin sensitivity ($\rho_{SI}$) and $\beta$-cell function ($\rho_{\beta}$) is calibrated
+against the Treat-to-Target trial \cite{riddle2003} and split 90/30/30 into training,
+validation and test patients, stratified by $\rho_{SI}$ tertile.
 
-The MVP is the minimal set of working features that demonstrates the complete pipeline: virtual
-patients $\rightarrow$ training and shielded titration $\rightarrow$ statistical comparison
-$\rightarrow$ interactive visualization (Table~\ref{tab:moscow}). \emph{Must} items form the
-protected Core tier; \emph{Should} items are dropped in reverse order if milestone M2 is more than
-one week late; \emph{Could} items start only if M3 is on time.
+\subsection{Decision Process and Rewards}
+Titration is formulated as a POMDP exposed through the Gymnasium API \cite{towers2025}. One step
+is one day and one episode lasts 168 days (24 weeks). The observation stacks 11 daily features
+(fasting SMBG, weight-normalized dose, last dose change, CGM TIR, TBR, TAR, mean and coefficient
+of variation, recent hypoglycemic events, body weight and time) over the last three days. The
+action is a dose change in $\{-4,-2,0,+2,+4\}$~U; for every policy the cumulative increase over
+any seven days is limited to 8~U and the dose to $[0, 1.0~\text{U/kg}]$. Three daily rewards
+are compared: R1 $=$ TIR; R2 $=-\frac{1}{K}\sum_k \rho(G_k)/100$, with the symmetrized risk
+function of Kovatchev \emph{et al.} \cite{kovatchev1997}; and R3 $=$ TIR $-\,5\,$TBR$_{<70}
+-\,10\,$TBR$_{<54}$.
 
-\begin{table*}[t]
-\centering
-\caption{MVP Prioritization with the MoSCoW Method}
-\label{tab:moscow}
-\scriptsize
-\begin{tabular}{@{}p{1.3cm}p{6.2cm}p{6.9cm}p{2.3cm}@{}}
-\toprule
-\textbf{Priority} & \textbf{Feature} & \textbf{Acceptance criterion} & \textbf{Status} \\
-\midrule
-\textbf{Must} & F1 T2D simulator and calibrated 150-patient cohort & generated reproducibly from one seed; checks V1--V4 pass & implemented; V4 open \\
-\textbf{Must} & F2 Gymnasium environment \texttt{TitrateRL/T2D-v0} & passes \texttt{check\_env}; 168-day episode $<$2~s; rate-limit and shield tests pass & done (0.15~s) \\
-\textbf{Must} & F3 Trained agents: PPO with R1--R3 (shield off) and shielded PPO with R$^\star$, 5 seeds each & checkpoints and learning curves stored; selection on validation patients & pipeline done; runs Wk 7--10 \\
-\textbf{Must} & F4 Rule-based policies B0--B3 behind the \texttt{Policy} interface & unit tests reproduce the published titration steps & done \\
-\textbf{Must} & F5 Evaluation pipeline & one command regenerates metric tables, statistical tests and figures & done \\
-\textbf{Must} & F6 Interactive dashboard & select a test patient and $\leq$3 policies; traces, doses, metrics, disclaimer; 24-week re-run $<$5~s; CSV export & done \\
-\textbf{Must} & F7 Installable package & \texttt{pip install}; environment registered; documented API and example notebook & done \\
-\textbf{Must} & RQ1--RQ3 analyses & H1--H3 decision rules applied to test-cohort data & Wk 10--13 \\
-\midrule
-\textbf{Should} & DQN agent; FPG-only PPO; $\lambda$ grid for R3; simulator-tuned rule B4; robustness scenario set & completed and reported as exploratory & code ready \\
-\textbf{Could} & Oracle per-patient fine-tuning; 2013 hypoglycemia model extensions; LSTM policy; SAC & started only if M3 is on time & --- \\
-\textbf{Won't} (this semester) & Real patient data or clinical deployment; Type~1 diabetes, pumps and bolus insulin; exercise, illness, missed injections; offline RL from EHRs; mobile app & out of scope; stated in README and model card & --- \\
-\bottomrule
-\end{tabular}
-\end{table*}
+\subsection{Agents, Safety Shield and Baselines}
+PPO \cite{schulman2017} is the primary algorithm and DQN \cite{mnih2015} a secondary one, both
+from Stable-Baselines3 \cite{raffin2021}; each configuration is trained for $10^6$ simulated
+days with five seeds \cite{henderson2018}, a new random training patient every episode, and
+checkpoint selection on validation patients only. A rule-based safety shield inspired by
+shielding in safe RL \cite{alshiekh2018} blocks dose increases after level-1 hypoglycemia in
+the last 72~h and reduces the dose by 20\% after level-2 hypoglycemia in the last 24~h. The
+baselines are a fixed dose of 0.2~U/kg (B0), AT.LANTUS (B1) \cite{davies2005}, Treat-to-Target
+(B2) \cite{riddle2003}, INSIGHT (B3) \cite{gerstein2006} and a simulator-tuned threshold rule
+(B4).
 
-\subsection{Metrics}
-
-Two kinds of metrics are used: \emph{product metrics} accept the software, and \emph{research
-metrics} answer the research questions (Table~\ref{tab:metrics}). Research endpoints are computed
-from noise-free plasma glucose over the 30 test patients $\times$ 10 scenarios; every patient
-contributes one paired value per comparison.
+\subsection{Evaluation Protocol and Metrics}
+Every policy is evaluated on the 30 test patients, each under ten 168-day scenarios with common
+random numbers. Endpoints are computed from noise-free plasma glucose (Table~\ref{tab:metrics})
+following the international CGM consensus \cite{battelino2019,battelino2023}. The primary
+efficacy endpoint is TIR in weeks 21--24 and the primary safety endpoint is TBR$_{<70}$ over all
+24 weeks. H2 is tested with Holm-adjusted one-sided paired Wilcoxon tests, the Hodges--Lehmann
+estimate of the TIR gain and 95\% bootstrap confidence intervals; H3 with Spearman's
+correlation. Overbasalization signals \cite{cowart2020} and the glucose management indicator
+\cite{bergenstal2018} are reported as secondary outcomes.
 
 \begin{table}[t]
 \centering
-\caption{Metrics Used for the MVP}
+\caption{Evaluation and Acceptance Metrics}
 \label{tab:metrics}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
@@ -432,16 +411,232 @@ H3 & Spearman($\rho_{SI}$, $\Delta$TIR) & negative, $p<0.05$ \\
 \end{tabular}
 \end{table}
 
-\subsection{Current status against the MVP}
-All seven features are implemented, with 84 automated tests (including a cross-implementation
-test against \texttt{simglucose} and a smoke PPO training run). Remaining Must work is the
-cohort calibration (check V4: week-24 fasting glucose 99.6~mg/dL vs.\ 110--125~mg/dL; 56\% vs.\
-25--50\% of patients at target; final dose 0.57~U/kg within range), the 20 Core training runs
-($\approx$15 CPU-hours) and the RQ1--RQ3 analyses, following milestones M1 (\texttt{v0.1-env}) to
-M4 (\texttt{v1.0-mvp}, Week~14).
+\subsection{Minimum Viable Product (MoSCoW)}
+The MVP is the minimal set of working features that demonstrates the complete pipeline: virtual
+patients, training and shielded titration, statistical comparison and interactive
+visualization. Table~\ref{tab:moscow} lists the features prioritized with the MoSCoW method and
+their acceptance criteria.
 
-\section*{Disclaimer}
-TitrateRL is in silico research software. It is not a medical device, and nothing in this report
-is medical advice.
+\begin{table*}[t]
+\centering
+\caption{MVP Prioritization with the MoSCoW Method}
+\label{tab:moscow}
+\scriptsize
+\begin{tabular}{@{}p{1.3cm}p{6.2cm}p{6.9cm}p{2.3cm}@{}}
+\toprule
+\textbf{Priority} & \textbf{Feature} & \textbf{Acceptance criterion} & \textbf{Status} \\
+\midrule
+\textbf{Must} & F1 T2D simulator and calibrated 150-patient cohort & generated reproducibly from one seed; checks V1--V4 pass & implemented; V4 open \\
+\textbf{Must} & F2 Gymnasium environment \texttt{TitrateRL/T2D-v0} & passes \texttt{check\_env}; 168-day episode $<$2~s; rate-limit and shield tests pass & done (0.15~s) \\
+\textbf{Must} & F3 Trained agents: PPO with R1--R3 (shield off) and shielded PPO with R$^\star$, 5 seeds each & checkpoints and learning curves stored; selection on validation patients & pipeline done; runs Wk 7--10 \\
+\textbf{Must} & F4 Rule-based policies B0--B3 behind the \texttt{Policy} interface & unit tests reproduce the published titration steps & done \\
+\textbf{Must} & F5 Evaluation pipeline & one command regenerates metric tables, statistical tests and figures & done \\
+\textbf{Must} & F6 Interactive dashboard & select a test patient and $\leq$3 policies; traces, doses, metrics, disclaimer; 24-week re-run $<$5~s; CSV export & done \\
+\textbf{Must} & F7 Installable package & \texttt{pip install}; environment registered; documented API and example notebook & done \\
+\textbf{Must} & RQ1--RQ3 analyses & H1--H3 decision rules applied to test-cohort data & Wk 10--13 \\
+\midrule
+\textbf{Should} & DQN agent; FPG-only PPO; $\lambda$ grid for R3; simulator-tuned rule B4; robustness scenario set & completed and reported as exploratory & code ready \\
+\textbf{Could} & Oracle per-patient fine-tuning; 2013 hypoglycemia model extensions; LSTM policy; SAC & started only if M3 is on time & --- \\
+\textbf{Won't} (this semester) & Real patient data or clinical deployment; Type~1 diabetes, pumps and bolus insulin; exercise, illness, missed injections; offline RL from EHRs; mobile app & out of scope; stated in README and model card & --- \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Ethical Considerations}
+Only simulated patients are used; no human subjects, personal data or clinical records are
+involved. TitrateRL will not recommend doses for real people, is not a medical device, and
+labels every output as a simulation result, following guidelines for RL in healthcare
+\cite{gottesman2019}.
+
+% =====================================================================================
+\section{Results}
+
+\subsection{Overall Framework Technical Evaluation (General Objective)}
+\textbf{[Insert Results for General Objective here: end-to-end pipeline status, simulator
+verification and validation checks (gate G1), runtime per episode, training throughput and
+test-suite results.]}
+
+\subsection{Reward Design and Efficacy--Safety Trade-off (SO1)}
+\textbf{[Insert Results for SO1 here: TIR, TBR$_{<70}$ and TBR$_{<54}$ of PPO with R1, R2 and R3
+on the test cohort (median and 95\% bootstrap CI), share of patients meeting the consensus
+targets, and the H1 test.]}
+
+\subsection{Comparison with Clinical Titration Algorithms (SO2)}
+\textbf{[Insert Results for SO2 here: maintenance-phase TIR and full-period TBR$_{<70}$ of the
+shielded PPO policy versus B1--B3, Hodges--Lehmann gains, Holm-adjusted p-values,
+non-inferiority intervals, time-to-target and dose burden.]}
+
+\subsection{Personalization and Insulin Sensitivity (SO3)}
+\textbf{[Insert Results for SO3 here: Spearman correlation between $\rho_{SI}$ and the TIR
+benefit, dose changes at matched fasting glucose by insulin-sensitivity tertile, and the
+train--test generalization gap.]}
+
+% =====================================================================================
+\section{Discussion}
+
+\subsection{Overall Framework Evaluation and Technical Feasibility}
+\textbf{[Insert Discussion for General Objective here: interpretation of simulator validity and
+calibration deviations, reproducibility of the pipeline, and project scope boundaries.]}
+
+\subsection{Reward Design (RQ1 / SO1)}
+\textbf{[Insert Discussion for RQ1 here: interpretation of the efficacy--safety trade-off of the
+rewards, overbasalization risk, and implications for encoding asymmetric clinical objectives
+(Problem 1).]}
+
+\subsection{Learned versus Clinical Titration (RQ2 / SO2)}
+\textbf{[Insert Discussion for RQ2 here: interpretation of the comparison with B1--B3, the value
+of CGM features versus fasting-glucose-only observations, decision frequency, and
+simulator-specific tuning (Problem 2).]}
+
+\subsection{Personalization (RQ3 / SO3)}
+\textbf{[Insert Discussion for RQ3 here: whether the policy adapts to unobserved insulin
+sensitivity, generalization to unseen patients, and safety under heterogeneity (Problem 3).]}
+
+\subsection{Limitations}
+\textbf{[Insert Limitations here: absence of counter-regulation in the model, extrapolation of
+single-meal parameters to 24 weeks, perfect adherence, remaining calibration gap, and the
+simulation-to-reality gap.]}
+
+% =====================================================================================
+\begin{thebibliography}{99}
+\footnotesize
+
+\bibitem{idf2025} International Diabetes Federation, \emph{IDF Diabetes Atlas}, 11th ed.
+Brussels, Belgium: International Diabetes Federation, 2025. [Online]. Available:
+https://diabetesatlas.org
+
+\bibitem{ada2026pharm} American Diabetes Association Professional Practice Committee for
+Diabetes, ``9. Pharmacologic approaches to glycemic treatment: Standards of Care in
+Diabetes---2026,'' \emph{Diabetes Care}, vol.~49, no.~Suppl.~1, pp.~S183--S215, Jan. 2026.
+
+\bibitem{ada2026goals} American Diabetes Association Professional Practice Committee for
+Diabetes, ``6. Glycemic goals, hypoglycemia, and hyperglycemic crises: Standards of Care in
+Diabetes---2026,'' \emph{Diabetes Care}, vol.~49, no.~Suppl.~1, pp.~S132--S149, Jan. 2026.
+
+\bibitem{riddle2003} M. C. Riddle, J. Rosenstock, and J. Gerich, ``The treat-to-target trial:
+Randomized addition of glargine or human NPH insulin to oral therapy of Type 2 diabetic
+patients,'' \emph{Diabetes Care}, vol.~26, no.~11, pp.~3080--3086, Nov. 2003.
+
+\bibitem{davies2005} M. Davies, F. Storms, S. Shutler, M. Bianchi-Biscay, and R. Gomis,
+``Improvement of glycemic control in subjects with poorly controlled Type 2 diabetes:
+Comparison of two treatment algorithms using insulin glargine,'' \emph{Diabetes Care},
+vol.~28, no.~6, pp.~1282--1288, Jun. 2005.
+
+\bibitem{gerstein2006} H. C. Gerstein, J.-F. Yale, S. B. Harris, M. Issa, J. A. Stewart, and
+E. Dempsey, ``A randomized trial of adding insulin glargine vs. avoidance of insulin in people
+with Type 2 diabetes on either no oral glucose-lowering agents or submaximal doses of metformin
+and/or sulphonylureas. The Canadian INSIGHT study,'' \emph{Diabet. Med.}, vol.~23, no.~7,
+pp.~736--742, Jul. 2006.
+
+\bibitem{mocarski2018} M. Mocarski, J. Yeaw, V. Divino, M. DeKoven, G. Guerrero, J. Langer,
+and B. L. Thorsted, ``Slow titration and delayed intensification of basal insulin among
+patients with Type 2 diabetes,'' \emph{J. Manag. Care Spec. Pharm.}, vol.~24, no.~4,
+pp.~390--400, Apr. 2018.
+
+\bibitem{battelino2019} T. Battelino \emph{et al.}, ``Clinical targets for continuous glucose
+monitoring data interpretation: Recommendations from the International Consensus on Time in
+Range,'' \emph{Diabetes Care}, vol.~42, no.~8, pp.~1593--1603, Aug. 2019.
+
+\bibitem{kovatchev2009} B. P. Kovatchev, M. Breton, C. Dalla Man, and C. Cobelli, ``In silico
+preclinical trials: A proof of concept in closed-loop control of Type 1 diabetes,'' \emph{J.
+Diabetes Sci. Technol.}, vol.~3, no.~1, pp.~44--55, Jan. 2009.
+
+\bibitem{karl2013} D. M. Karl, J. Gill, R. Zhou, and M. C. Riddle, ``Clinical predictors of
+risk of hypoglycaemia during addition and titration of insulin glargine for type 2 diabetes
+mellitus,'' \emph{Diabetes Obes. Metab.}, vol.~15, no.~7, pp.~622--628, Jul. 2013.
+
+\bibitem{sutton2018} R. S. Sutton and A. G. Barto, \emph{Reinforcement Learning: An
+Introduction}, 2nd ed. Cambridge, MA, USA: MIT Press, 2018.
+
+\bibitem{tejedor2020} M. Tejedor, A. Z. Woldaregay, and F. Godtliebsen, ``Reinforcement
+learning application in diabetes blood glucose control: A systematic review,'' \emph{Artif.
+Intell. Med.}, vol.~104, p.~101836, 2020.
+
+\bibitem{wang2023} G. Wang \emph{et al.}, ``Optimized glycemic control of type 2 diabetes with
+reinforcement learning: a proof-of-concept trial,'' \emph{Nat. Med.}, vol.~29, no.~10,
+pp.~2633--2642, Oct. 2023.
+
+\bibitem{panagiotou2025} M. Panagiotou \emph{et al.}, ``Personalized insulin adjustment with
+reinforcement learning: An in-silico validation for people with diabetes on intensive insulin
+treatment,'' \emph{IEEE Access}, vol.~13, pp.~148\,436--148\,455, 2025.
+
+\bibitem{simglucose} J. Xie, ``Simglucose v0.2.1,'' GitHub repository, 2018. MIT License.
+[Online]. Available: https://github.com/jxx123/simglucose
+
+\bibitem{kwon2026} M. Kwon, J. Lamp, and L. Feng, ``Safety generalization under distribution
+shift in safe reinforcement learning: A diabetes testbed,'' in \emph{Proc. 43rd Int. Conf.
+Mach. Learn. (ICML)}, ser. PMLR, vol.~306, Jul. 2026, pp.~61\,952--61\,985.
+
+\bibitem{dallaman2007} C. Dalla Man, R. A. Rizza, and C. Cobelli, ``Meal simulation model of
+the glucose-insulin system,'' \emph{IEEE Trans. Biomed. Eng.}, vol.~54, no.~10,
+pp.~1740--1749, Oct. 2007.
+
+\bibitem{dallaman2007gim} C. Dalla Man, D. M. Raimondo, R. A. Rizza, and C. Cobelli, ``GIM,
+simulation software of meal glucose--insulin model,'' \emph{J. Diabetes Sci. Technol.},
+vol.~1, no.~3, pp.~323--330, May 2007.
+
+\bibitem{schiavon2020} M. Schiavon, R. Visentin, C. Giegerich, T. Klabunde, C. Cobelli, and
+C. Dalla Man, ``Modeling subcutaneous absorption of long-acting insulin glargine in type 1
+diabetes,'' \emph{IEEE Trans. Biomed. Eng.}, vol.~67, no.~2, pp.~624--631, Feb. 2020.
+
+\bibitem{lepore2000} M. Lepore \emph{et al.}, ``Pharmacokinetics and pharmacodynamics of
+subcutaneous injection of long-acting human insulin analog glargine, NPH insulin, and
+ultralente human insulin and continuous subcutaneous infusion of insulin lispro,''
+\emph{Diabetes}, vol.~49, no.~12, pp.~2142--2148, Dec. 2000.
+
+\bibitem{lam2015} S. K. Lam, A. Pitrou, and S. Seibert, ``Numba: A LLVM-based Python JIT
+compiler,'' in \emph{Proc. 2nd Workshop LLVM Compiler Infrastructure HPC}, Austin, TX, USA,
+Nov. 2015, pp.~1--6.
+
+\bibitem{breton2008} M. Breton and B. Kovatchev, ``Analysis, modeling, and simulation of the
+accuracy of continuous glucose sensors,'' \emph{J. Diabetes Sci. Technol.}, vol.~2, no.~5,
+pp.~853--862, Sep. 2008.
+
+\bibitem{iso15197} \emph{In Vitro Diagnostic Test Systems---Requirements for Blood-Glucose
+Monitoring Systems for Self-Testing in Managing Diabetes Mellitus}, ISO 15197:2013,
+International Organization for Standardization, Geneva, Switzerland, May 2013.
+
+\bibitem{towers2025} M. Towers \emph{et al.}, ``Gymnasium: A standard interface for
+reinforcement learning environments,'' in \emph{Adv. Neural Inf. Process. Syst. (NeurIPS),
+Datasets and Benchmarks Track}, vol.~38, 2025, pp.~163\,114--163\,129.
+
+\bibitem{kovatchev1997} B. P. Kovatchev, D. J. Cox, L. A. Gonder-Frederick, and W. Clarke,
+``Symmetrization of the blood glucose measurement scale and its applications,''
+\emph{Diabetes Care}, vol.~20, no.~11, pp.~1655--1658, Nov. 1997.
+
+\bibitem{schulman2017} J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov,
+``Proximal policy optimization algorithms,'' arXiv preprint arXiv:1707.06347, 2017.
+
+\bibitem{mnih2015} V. Mnih \emph{et al.}, ``Human-level control through deep reinforcement
+learning,'' \emph{Nature}, vol.~518, no.~7540, pp.~529--533, Feb. 2015.
+
+\bibitem{raffin2021} A. Raffin, A. Hill, A. Gleave, A. Kanervisto, M. Ernestus, and
+N. Dormann, ``Stable-Baselines3: Reliable reinforcement learning implementations,'' \emph{J.
+Mach. Learn. Res.}, vol.~22, no.~268, pp.~1--8, 2021.
+
+\bibitem{henderson2018} P. Henderson, R. Islam, P. Bachman, J. Pineau, D. Precup, and
+D. Meger, ``Deep reinforcement learning that matters,'' in \emph{Proc. 32nd AAAI Conf. Artif.
+Intell.}, vol.~32, no.~1, 2018, pp.~3207--3214.
+
+\bibitem{alshiekh2018} M. Alshiekh, R. Bloem, R. Ehlers, B. K\"onighofer, S. Niekum, and
+U. Topcu, ``Safe reinforcement learning via shielding,'' in \emph{Proc. 32nd AAAI Conf. Artif.
+Intell.}, vol.~32, no.~1, 2018, pp.~2669--2678.
+
+\bibitem{battelino2023} T. Battelino \emph{et al.}, ``Continuous glucose monitoring and metrics
+for clinical trials: an international consensus statement,'' \emph{Lancet Diabetes
+Endocrinol.}, vol.~11, no.~1, pp.~42--57, Jan. 2023.
+
+\bibitem{cowart2020} K. Cowart, ``Overbasalization: Addressing hesitancy in treatment
+intensification beyond basal insulin,'' \emph{Clin. Diabetes}, vol.~38, no.~3, pp.~304--310,
+Jul. 2020.
+
+\bibitem{bergenstal2018} R. M. Bergenstal \emph{et al.}, ``Glucose management indicator (GMI):
+A new term for estimating A1C from continuous glucose monitoring,'' \emph{Diabetes Care},
+vol.~41, no.~11, pp.~2275--2280, Nov. 2018.
+
+\bibitem{gottesman2019} O. Gottesman \emph{et al.}, ``Guidelines for reinforcement learning in
+healthcare,'' \emph{Nat. Med.}, vol.~25, no.~1, pp.~16--18, Jan. 2019.
+
+\end{thebibliography}
 
 \end{document}
