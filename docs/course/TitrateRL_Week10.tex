@@ -135,44 +135,83 @@ increasing hypoglycemia is unknown for T2D.
 observed directly \cite{karl2013}. How the benefit and the dosing behavior of a learned policy
 depend on insulin sensitivity has not been characterized.
 
-\subsection{Research Questions}
+\subsection{Research Questions and Specific Objectives}
+Each research question is paired with a specific, measurable objective (SO) that fixes the
+method, the metrics, the success criterion and the deadline in advance.
 \begin{enumerate}[label=\arabic*)]
 \item \textbf{RQ1.} How does the reward formulation (R1 time in range, R2 risk index, R3 time in
 range with hypoglycemia penalties) affect time in range (TIR) and time below range (TBR) of
 PPO titration policies?
+
+\emph{SO1 (Weeks 8--10).} Train PPO under R1, R2 and R3 (five seeds each, shield off) in the
+environment validated at milestone M1, and select the reward R$^\star$ with the highest median
+validation TIR among the rewards for which TBR$_{<70}<4\%$ and TBR$_{<54}<1\%$ hold in at least
+90\% of validation patients. Evaluate the three configurations on the 30-patient test cohort and
+report the median and 95\% bootstrap CI of TIR, TBR$_{<70}$ and TBR$_{<54}$. \emph{Success
+criterion (H1):} R3 has a lower TBR$_{<70}$ than R1 (one-sided paired Wilcoxon test,
+$\alpha=0.05$) with a median TIR at most 5~pp lower.
+
 \item \textbf{RQ2.} Does a shielded PPO policy achieve a higher maintenance-phase TIR than the
 AT.LANTUS, Treat-to-Target and INSIGHT algorithms on held-out patients while remaining
 non-inferior in TBR$_{<70}$?
+
+\emph{SO2 (Week 11).} Evaluate the primary policy, PPO with R$^\star$ and the safety shield
+(five seeds), against B1--B3 on the 30 test patients with ten 24-week scenarios each. The
+primary efficacy endpoint is TIR in weeks 21--24 and the primary safety endpoint is TBR$_{<70}$
+over 24 weeks. \emph{Success criterion (H2), per algorithm:} (i) the Holm-adjusted one-sided
+paired Wilcoxon test of the TIR difference is significant ($\alpha=0.05$); (ii) the
+Hodges--Lehmann TIR gain is at least 5~pp; and (iii) the upper limit of the 95\% bootstrap CI of
+the mean paired TBR$_{<70}$ difference is below 1~pp.
+
 \item \textbf{RQ3.} How does the benefit vary with insulin sensitivity, and does the policy
 choose different dose changes for insulin-resistant and insulin-sensitive patients with similar
 fasting glucose?
+
+\emph{SO3 (Week 13).} For the 30 test patients, quantify (i) Spearman's correlation between the
+insulin-sensitivity factor $\rho_{SI}$ and the per-patient TIR difference to the best clinical
+algorithm; (ii) the difference between the lowest and the highest $\rho_{SI}$ tertile in the mean
+dose change chosen at matched fasting glucose (100--130, 130--180 and $>$180~mg/dL); and (iii) the
+train--test generalization gap in TIR and TBR$_{<70}$, all with 95\% bootstrap CIs. \emph{Success
+criterion (H3):} a negative correlation (one-sided, $\alpha=0.05$) and larger dose increases for
+the most insulin-resistant tertile (CI of the difference excludes zero).
 \end{enumerate}
 
-\subsection{Research Objectives}
-\emph{General objective.} Design, implement and evaluate within 14 weeks an open-source,
-simulation-based RL framework that learns daily basal-insulin titration policies for virtual
-patients with T2D and benchmarks them against clinical titration algorithms using
-internationally recommended glycemic metrics.
-
-\emph{Specific objectives.} Train PPO under R1, R2 and R3 with five seeds and select the reward
-on validation patients (RQ1). Evaluate the shielded PPO policy against B1--B3 on 30 test patients
-with ten scenarios each (RQ2). Quantify the association of the benefit with insulin sensitivity
-and the dose behavior by insulin-sensitivity tertile (RQ3). Deliver the validated environment
-as an installable package with an evaluation pipeline and an interactive dashboard.
+\subsection{General Objective}
+Design, implement and evaluate within the 14-week semester an open-source, simulation-based RL
+framework that learns daily basal-insulin titration policies for virtual patients with T2D and
+benchmarks them against clinical titration algorithms using internationally recommended
+glycemic metrics. The framework is delivered as an installable, validated environment with an
+evaluation pipeline and an interactive dashboard.
 
 % =====================================================================================
 \section{Methodology}
 
 \subsection{Development Process and Project Scope}
-The team follows an iterative, Scrum-inspired process with two-week sprints, a backlog in
-GitHub Projects and supervisor reviews at milestones M1--M4. The simulator, wrappers and metrics
-are developed test-first; GitHub Flow with a protected \texttt{main} branch, reviewed pull
-requests and continuous integration (linting and tests on Python 3.10--3.12) separates
-development from stable revisions. Experiments are version-controlled YAML files with fixed
-seeds, and models and result tables are stored separately from the source code. The project
-covers in silico research software only: real patient data, dosing recommendations for real
-people, Type~1 diabetes, bolus insulin and regulatory validation are outside its scope, and
-every output is labelled as a simulation result \cite{gottesman2019}.
+The team follows an iterative and incremental process inspired by Scrum, with two-week
+sprints, a prioritized backlog in GitHub Projects, weekly synchronization and supervisor reviews
+at milestones M1--M4. An item is done when its code is merged, its tests pass in continuous
+integration, it is documented, and any experiment it produced is logged with its configuration
+and commit hash.
+
+Within this process, the simulator, the environment wrappers and the metric functions are built
+with \emph{test-driven development} (TDD): each requirement is first written as a failing
+\texttt{pytest} test, and the code is written until the test passes. The test suite includes
+(i) an integrator test (the RK4 trajectory matches SciPy's \texttt{solve\_ivp}); (ii) a
+cross-implementation test (with endogenous secretion switched off and \texttt{simglucose}
+parameters, the shared subsystems reproduce the \texttt{simglucose} right-hand side); (iii)
+equilibrium and periodic-steady-state tests; (iv) a dose--response test (fasting glucose is
+non-increasing in the dose); (v) tests that reproduce the published titration steps of B1--B3;
+and (vi) metric tests against hand-computed examples, rate-limit and shield tests, determinism
+tests and the Gymnasium API check. These tests also implement the simulator acceptance checks
+of gate G1.
+
+GitHub Flow with a protected \texttt{main} branch and reviewed pull requests separates
+development from stable revisions; continuous integration runs linting and the test suite on
+Python 3.10--3.12. Experiments are version-controlled YAML files with fixed seeds, and models and
+result tables are stored separately from the source code. The project covers in silico research
+software only: real patient data, dosing recommendations for real people, Type~1 diabetes,
+bolus insulin and regulatory validation are outside its scope, and every output is labelled as a
+simulation result \cite{gottesman2019}.
 
 \subsection{System Architecture and Deployment}
 TitrateRL follows a layered architecture in which each layer depends only on the layers below
