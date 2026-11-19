@@ -28,7 +28,7 @@ import pandas as pd
 from titraterl.cohort.generator import Cohort, CohortConfig, generate_cohort
 from titraterl.config import EvalConfig
 from titraterl.evaluation.logging import trajectory_frame, write_trajectory
-from titraterl.evaluation.runner import evaluate, per_patient
+from titraterl.evaluation.runner import evaluate, per_patient, pool_training_seeds
 from titraterl.evaluation.statistics import bootstrap_ci, evaluate_h1, evaluate_h2, evaluate_h3
 from titraterl.policies import RULE_POLICIES, Policy, SB3Policy
 
@@ -269,6 +269,10 @@ def run_pipeline(cfg: EvalConfig, cohort: Cohort | None = None, progress: bool =
         )
     df.to_parquet(out / "episodes.parquet", index=False)
     pp = per_patient(df)
+    if cfg.pool_seeds:
+        pp.to_csv(out / "per_patient_by_seed.csv", index=False)
+        summarize_policies(pp).to_csv(out / "summary_by_seed.csv")
+        pp = per_patient(pool_training_seeds(df))
     pp.to_csv(out / "per_patient.csv", index=False)
     summarize_policies(pp).to_csv(out / "summary.csv")
     if cfg.log_trajectories:
