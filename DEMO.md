@@ -25,7 +25,7 @@ titraterl system-test
 Checklist before the session:
 
 - [ ] `titraterl system-test` shows all PASS except ST-03 (known calibration gap V4)
-- [ ] `titraterl dashboard` opens in the browser and lists the four pilot agents
+- [ ] `titraterl dashboard` opens in the browser and lists the five pilot agents
 - [ ] GitHub repository open in a browser tab: latest CI run green, pull requests visible
 - [ ] Laptop charged, notifications off, terminal font large, browser zoom 125 %
 - [ ] Fallback: `docs/course/` PDF and `results/week11_pilot/figures/` open in case of a failure
