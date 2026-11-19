@@ -6,9 +6,9 @@ Proposal Table XI. Week 12 is a schedule buffer.
 |---|---|---|---|
 | 1–3 | Requirements and architecture; repository, CI and packaging skeleton; T2D parameters extracted; patient model adapted from simglucose and extended with the T2D blocks; glargine model; integrator and cross-implementation tests | N. Khabibullaev (requirements); B. Uchqunov (architecture, CI, packaging); I. Abralov (model, tests); A. Abdusattarov (MDP spec, SB3 prototype) | ✅ implemented |
 | 4–6 | Cohort generator and calibration (Weeks 4–5); environment with observation, reward, rate limit and shield; B0–B3; validation checks; **gate G1**; **M1 `v0.1-env`** | I. Abralov; A. Abdusattarov; B. Uchqunov; N. Khabibullaev | 🟡 code done; V4 calibration open |
-| 7–8 | PPO with R1–R3 (shield off, 5 seeds); reward selection and power check (**gate G2**); start shielded PPO-R★; **M2 `v0.2-agents`** | A. Abdusattarov; N. Khabibullaev; B. Uchqunov | ⏳ |
-| 9–10 | Evaluation pipeline with CRN, statistics, dashboard v1; shielded PPO-R★ (5 seeds); Should-tier runs; RQ1 test-cohort evaluation (**O1**) | N. Khabibullaev; A. Abdusattarov; I. Abralov; B. Uchqunov | 🟡 pipeline and dashboard implemented |
-| 11–12 | Full test-cohort evaluation (**O2**, end of Week 11); packaging and dashboard finalization; buffer; **M3 `v0.3-eval`** | N. Khabibullaev; B. Uchqunov; A. Abdusattarov, I. Abralov | ⏳ |
+| 7–8 | PPO with R1–R3 (shield off, 5 seeds); reward selection and power check (**gate G2**); start shielded PPO-R★; **M2 `v0.2-agents`** | A. Abdusattarov; N. Khabibullaev; B. Uchqunov | 🟡 pilot (1 seed, 3×10⁵ days) done; R★ = R1; full runs pending |
+| 9–10 | Evaluation pipeline with CRN, statistics, dashboard v1; shielded PPO-R★ (5 seeds); Should-tier runs; RQ1 test-cohort evaluation (**O1**) | N. Khabibullaev; A. Abdusattarov; I. Abralov; B. Uchqunov | ✅ pipeline, statistics, dashboard · 🟡 RQ1 pilot |
+| 11–12 | Full test-cohort evaluation (**O2**, end of Week 11); packaging and dashboard finalization; buffer; **M3 `v0.3-eval`** | N. Khabibullaev; B. Uchqunov; A. Abdusattarov, I. Abralov | 🟡 system tests 11/12 pass; pilot test-cohort evaluation done; full evaluation pending |
 | 13 | RQ3 analyses (correlation, dose behavior, generalization gap) (**O3**); Could tier only if M3 on time | N. Khabibullaev, A. Abdusattarov; I. Abralov; B. Uchqunov | ⏳ |
 | 14 | Final report, README, user guide, model card, presentation; **M4 `v1.0-mvp`** | all | ⏳ |
 

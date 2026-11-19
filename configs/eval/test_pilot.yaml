@@ -1,0 +1,20 @@
+# Week 11 pilot evaluation: clinical baselines and the five pilot agents
+# (3 x 10^5 training days, seed 0) on the 30 test patients x 10 scenarios with CRN.
+# Primary policy: PPO with R* = R1 (selected on validation) and the safety shield.
+# Pilot budget is 30 % of the planned 10^6 days and one seed instead of five:
+# results are preliminary and are re-run with the full protocol (configs/eval/test.yaml).
+split: test
+n_scenarios: 10
+base_seed: 7
+n_jobs: 2
+rule_policies: [b0_fixed, b1_atlantus, b2_treat_to_target, b3_insight]
+checkpoints:
+  - {policy_id: ppo_r1_s0, path: models/pilot/ppo_r1_s0/best_model.zip, algo: ppo, obs_mode: full, shield: false}
+  - {policy_id: ppo_r2_s0, path: models/pilot/ppo_r2_s0/best_model.zip, algo: ppo, obs_mode: full, shield: false}
+  - {policy_id: ppo_r3_s0, path: models/pilot/ppo_r3_s0/best_model.zip, algo: ppo, obs_mode: full, shield: false}
+  - {policy_id: ppo_r3_shield_s0, path: models/pilot/ppo_r3_shield_s0/best_model.zip, algo: ppo, obs_mode: full, shield: true}
+  - {policy_id: ppo_rstar_shield_s0, path: models/pilot/ppo_rstar_shield_s0/best_model.zip, algo: ppo, obs_mode: full, shield: true}
+primary_policy: ppo_rstar_shield_s0
+h1_policies: [ppo_r1_s0, ppo_r3_s0]
+output_dir: results/week11_pilot
+log_trajectories: false

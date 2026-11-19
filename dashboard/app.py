@@ -23,13 +23,16 @@ DISCLAIMER = (
     "**In silico simulation only.** TitrateRL is research software. It is not a medical "
     "device and must not be used to dose insulin for real people."
 )
-RUNS_DIR = Path("runs")
+ROOT = Path(__file__).resolve().parents[1]
+# Agents trained locally (runs/) and the released pilot agents committed to the repo (models/).
+AGENT_DIRS = (ROOT / "runs", ROOT / "models" / "pilot", Path("runs"))
 
 
 def discover_checkpoints() -> dict[str, dict]:
-    """Trained agents saved by ``titraterl train`` (runs/<run_id>/best_model.zip)."""
-    found = {}
-    for run_json in sorted(RUNS_DIR.glob("*/run.json")):
+    """Trained agents: ``<dir>/<run_id>/best_model.zip`` with its ``run.json``."""
+    found: dict[str, dict] = {}
+    run_files = sorted({p.resolve() for d in AGENT_DIRS for p in d.glob("*/run.json")})
+    for run_json in run_files:
         model = run_json.parent / "best_model.zip"
         if model.exists():
             cfg = json.loads(run_json.read_text())["config"]
@@ -93,7 +96,7 @@ def main() -> None:
         seed = st.number_input("Scenario seed", min_value=0, max_value=2**31 - 1, value=0, step=1)
         week = st.slider("Week to display (glucose trace)", 1, 24, 24)
         if not checkpoints:
-            st.caption("No trained agents found in runs/. Train one with `titraterl train`.")
+            st.caption("No trained agents found in runs/ or models/pilot/. Train one with `titraterl train`.")
 
     cp = cohort.get(patient_id)
     st.caption(

@@ -22,12 +22,14 @@ htmlcov/
 *.nbc
 
 # Experiment outputs (reproducible from configs; share via releases, not git)
-data/
-runs/
-results/
-reports/
+/data/
+/runs/
+/results/
+/reports/
 *.parquet
 *.zip
+# Released pilot agents are versioned (small, needed for the demo)
+!models/**/*.zip
 
 # OS / IDE
 .DS_Store
