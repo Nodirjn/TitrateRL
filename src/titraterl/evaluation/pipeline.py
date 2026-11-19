@@ -214,7 +214,9 @@ def _evaluate_chunk(cfg_dict: dict, patient_ids: list[str]) -> pd.DataFrame:
     cfg = EvalConfig(**cfg_dict)
     cohort = generate_cohort(CohortConfig.from_dict(cfg.cohort) if cfg.cohort else CohortConfig())
     patients = [cohort.get(pid) for pid in patient_ids]
-    df, _ = evaluate(build_policies(cfg), cohort, patients, cfg.n_scenarios, cfg.base_seed)
+    df, _ = evaluate(
+        build_policies(cfg), cohort, patients, cfg.n_scenarios, cfg.base_seed, env_kwargs=cfg.env_kwargs()
+    )
     return df
 
 
@@ -264,6 +266,7 @@ def run_pipeline(cfg: EvalConfig, cohort: Cohort | None = None, progress: bool =
             patients,
             cfg.n_scenarios,
             cfg.base_seed,
+            env_kwargs=cfg.env_kwargs(),
             keep_records=cfg.log_trajectories,
             progress=progress,
         )

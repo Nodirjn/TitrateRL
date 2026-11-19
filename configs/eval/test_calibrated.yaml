@@ -1,0 +1,16 @@
+# Sensitivity evaluation (Week 13): the V4-calibrated world (docs/validation.md).
+# Cohort with median rho_si 3.0 and 15 % missed injections; agents are NOT retrained.
+# Checkpoints are filled in after phase 2 (same list as configs/eval/test_full.yaml).
+split: test
+n_scenarios: 10
+base_seed: 7
+n_jobs: 2
+cohort:
+  rho_si: {median: 3.0, sigma: 0.35}
+scenario:
+  missed_injection_prob: 0.15
+rule_policies: [b0_fixed, b1_atlantus, b2_treat_to_target, b3_insight]
+checkpoints: []
+pool_seeds: true
+primary_policy: null
+output_dir: results/test_calibrated
