@@ -118,6 +118,9 @@ class EvalConfig:
     output_dir: str = "results"
     log_trajectories: bool = False
     cohort: dict[str, Any] = field(default_factory=dict)
+    n_jobs: int = 1
+    h1_policies: list[str] = field(default_factory=list)  # [R1 policy id, R3 policy id]
+    h3_reference: str | None = None  # clinical algorithm for H3 (default: best median TIR of B1-B3)
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> EvalConfig:

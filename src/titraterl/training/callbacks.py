@@ -101,7 +101,8 @@ class SelectionCallback(BaseCallback):
         if self.verbose:
             print(
                 f"[select] t={score.timesteps} TIR={score.median_tir:.3f} "
-                f"TBR70={score.median_tbr70:.4f} ok={score.share_meeting_targets:.0%}"
+                f"TBR70={score.median_tbr70:.4f} ok={score.share_meeting_targets:.0%}",
+                flush=True,
             )
         return True
 
