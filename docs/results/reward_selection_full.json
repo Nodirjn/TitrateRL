@@ -1,0 +1,42 @@
+{
+  "rule": "max median TIR s.t. share >= 0.9",
+  "rewards": {
+    "r1": {
+      "n_seeds": 5,
+      "median_tir": 0.6071996941137566,
+      "share_meeting_targets": 0.9666666666666667,
+      "per_seed_tir": [
+        0.6081,
+        0.6072,
+        0.606,
+        0.6067,
+        0.6082
+      ]
+    },
+    "r2": {
+      "n_seeds": 5,
+      "median_tir": 0.6045076884920635,
+      "share_meeting_targets": 0.9333333333333333,
+      "per_seed_tir": [
+        0.6015,
+        0.6056,
+        0.6072,
+        0.6045,
+        0.5951
+      ]
+    },
+    "r3": {
+      "n_seeds": 5,
+      "median_tir": 0.59482990244709,
+      "share_meeting_targets": 1.0,
+      "per_seed_tir": [
+        0.5904,
+        0.5988,
+        0.5904,
+        0.5964,
+        0.5948
+      ]
+    }
+  },
+  "selected": "r1"
+}
