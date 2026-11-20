@@ -28,7 +28,7 @@ import pandas as pd
 from titraterl.cohort.generator import Cohort, CohortConfig, generate_cohort
 from titraterl.config import EvalConfig
 from titraterl.evaluation.logging import trajectory_frame, write_trajectory
-from titraterl.evaluation.runner import evaluate, per_patient
+from titraterl.evaluation.runner import evaluate, per_patient, pool_training_seeds
 from titraterl.evaluation.statistics import bootstrap_ci, evaluate_h1, evaluate_h2, evaluate_h3
 from titraterl.policies import RULE_POLICIES, Policy, SB3Policy
 
@@ -214,7 +214,9 @@ def _evaluate_chunk(cfg_dict: dict, patient_ids: list[str]) -> pd.DataFrame:
     cfg = EvalConfig(**cfg_dict)
     cohort = generate_cohort(CohortConfig.from_dict(cfg.cohort) if cfg.cohort else CohortConfig())
     patients = [cohort.get(pid) for pid in patient_ids]
-    df, _ = evaluate(build_policies(cfg), cohort, patients, cfg.n_scenarios, cfg.base_seed)
+    df, _ = evaluate(
+        build_policies(cfg), cohort, patients, cfg.n_scenarios, cfg.base_seed, env_kwargs=cfg.env_kwargs()
+    )
     return df
 
 
@@ -264,11 +266,16 @@ def run_pipeline(cfg: EvalConfig, cohort: Cohort | None = None, progress: bool =
             patients,
             cfg.n_scenarios,
             cfg.base_seed,
+            env_kwargs=cfg.env_kwargs(),
             keep_records=cfg.log_trajectories,
             progress=progress,
         )
     df.to_parquet(out / "episodes.parquet", index=False)
     pp = per_patient(df)
+    if cfg.pool_seeds:
+        pp.to_csv(out / "per_patient_by_seed.csv", index=False)
+        summarize_policies(pp).to_csv(out / "summary_by_seed.csv")
+        pp = per_patient(pool_training_seeds(df))
     pp.to_csv(out / "per_patient.csv", index=False)
     summarize_policies(pp).to_csv(out / "summary.csv")
     if cfg.log_trajectories:

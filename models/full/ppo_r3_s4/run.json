@@ -1,0 +1,55 @@
+{
+  "config": {
+    "run_name": "ppo_r3",
+    "algo": "ppo",
+    "reward": "r3",
+    "reward_kwargs": {
+      "lambda1": 5.0,
+      "lambda2": 10.0
+    },
+    "obs_mode": "full",
+    "shield": false,
+    "total_timesteps": 1000000,
+    "n_envs": 8,
+    "seed": 4,
+    "eval_freq": 50000,
+    "selection_scenarios_per_patient": 2,
+    "selection_base_seed": 101,
+    "output_dir": "/home/claude/titraterl/runs/full",
+    "cohort": {},
+    "ppo": {
+      "learning_rate": 0.0003,
+      "n_steps": 256,
+      "batch_size": 64,
+      "n_epochs": 10,
+      "clip_range": 0.2,
+      "gae_lambda": 0.95,
+      "gamma": 0.99,
+      "net_arch": [
+        64,
+        64
+      ],
+      "activation": "tanh"
+    },
+    "dqn": {
+      "learning_rate": 0.0001,
+      "buffer_size": 100000,
+      "batch_size": 64,
+      "target_update_interval": 1000,
+      "train_freq": 4,
+      "learning_starts": 1000,
+      "exploration_fraction": 0.1,
+      "exploration_final_eps": 0.05,
+      "gamma": 0.99,
+      "net_arch": [
+        64,
+        64
+      ],
+      "activation": "relu"
+    }
+  },
+  "titraterl_version": "0.1.0.dev0",
+  "commit": "9a5dd273f6722faf34ee374ed70fd33e372dde56",
+  "python": "3.13.18",
+  "torch": "2.15.0+cu132"
+}

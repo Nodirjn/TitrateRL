@@ -90,3 +90,26 @@ def test_system_test_markdown():
         ]
     )
     assert "1 passed, 1 failed, 1 skipped" in md and "**FAIL**" in md
+
+
+def test_pool_training_seeds_merges_seed_suffix():
+    import pandas as pd
+
+    from titraterl.evaluation.runner import per_patient, pool_training_seeds
+
+    df = pd.DataFrame(
+        {
+            "policy_id": ["ppo_r1_s0", "ppo_r1_s1", "b2_treat_to_target", "b2_treat_to_target"],
+            "patient_id": ["P1"] * 4,
+            "split": ["test"] * 4,
+            "si_tertile": [1] * 4,
+            "rho_si": [2.0] * 4,
+            "scenario_index": [0, 0, 0, 1],
+            "scenario_seed": [1, 1, 1, 2],
+            "maintenance_tir": [0.5, 0.7, 0.4, 0.6],
+        }
+    )
+    pp = per_patient(pool_training_seeds(df)).set_index("policy_id")
+    assert set(pp.index) == {"ppo_r1", "b2_treat_to_target"}
+    assert pp.loc["ppo_r1", "maintenance_tir"] == 0.6
+    assert pp.loc["b2_treat_to_target", "maintenance_tir"] == 0.5

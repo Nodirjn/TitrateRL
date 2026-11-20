@@ -3,7 +3,21 @@
 All notable changes are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow the milestone tags.
 
-## [Unreleased] — Week 11: System Testing and Evaluation
+## [Unreleased] — Week 12: full protocol and test-cohort evaluation
+
+### Added
+- `scripts/run_protocol.py`: resumable training queue for phases 1–2 (20 PPO runs, 5 seeds).
+- `scripts/select_reward.py`: pre-registered R★ rule over seeds; R★ = R1 confirmed.
+- 20 selected full-protocol checkpoints (`models/full/`).
+- Full test-cohort evaluation (`configs/eval/test_full.yaml`, `docs/results/full_protocol.md`):
+  H1 supported (TIR loss 4.0 pp), H2 not supported (gains 2.2–3.8 pp < 5 pp, TBR non-inferior),
+  H3 not supported.
+- Missed-injection (non-adherence) scenario option and V4 sensitivity analysis
+  (`scripts/v4_sensitivity.py`, `docs/validation.md`); calibrated-world evaluation
+  (`configs/eval/test_calibrated.yaml`).
+- Seed pooling in the evaluation pipeline (`pool_seeds`).
+
+## Week 11: System Testing and Evaluation
 
 ### Added
 - `titraterl system-test`: 12 end-to-end system tests against the MVP acceptance criteria
