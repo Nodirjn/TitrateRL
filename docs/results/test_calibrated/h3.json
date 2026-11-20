@@ -1,0 +1,21 @@
+{
+  "primary": "ppo_rstar_shield",
+  "reference": "b2_treat_to_target",
+  "spearman_rho": -0.3067853170189099,
+  "p_value": 0.049576844947808875,
+  "supported": true,
+  "by_si_tertile": {
+    "1": {
+      "n": 10,
+      "median_tir_diff_pp": 0.17026289682540163
+    },
+    "2": {
+      "n": 10,
+      "median_tir_diff_pp": 0.18576388888889295
+    },
+    "3": {
+      "n": 10,
+      "median_tir_diff_pp": -0.9208829365079357
+    }
+  }
+}
