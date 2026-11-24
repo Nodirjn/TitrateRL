@@ -46,7 +46,7 @@ Status as of 25 November 2026 · Repository: github.com/Nodirjn/TitrateRL · In 
 <h2>2. What we measure and which methods we use</h2>
 <table>
 <tr><th style="width:26%">Item</th><th>Content</th></tr>
-<tr><td>Main metric</td><td><b>TIR</b>: share of time with glucose 70–180 mg/dL in weeks 13–24 (maintenance phase). Higher is better.</td></tr>
+<tr><td>Main metric</td><td><b>TIR</b>: share of time with glucose 70–180 mg/dL in weeks 21–24 (maintenance phase), from noise-free plasma glucose. Higher is better.</td></tr>
 <tr><td>Safety metrics</td><td><b>TBR&lt;70</b> and <b>TBR&lt;54</b>: time below 70 and below 54 mg/dL (hypoglycemia). Lower is better. Consensus targets: TBR&lt;70 &lt; 4 %, TBR&lt;54 &lt; 1 %.</td></tr>
 <tr><td>Environment</td><td>One step = one day, 168 days (24 weeks). Action: change the dose by −4, −2, 0, +2 or +4 U. Hard limits for every policy: ≤ 8 U increase per 7 days, ≤ 1 U/kg.</td></tr>
 <tr><td>Algorithm</td><td><b>PPO</b> (Proximal Policy Optimization, Stable-Baselines3), 33 input features, 64×64 network.</td></tr>
@@ -147,7 +147,7 @@ Holat: 2026-yil 25-noyabr · Repozitoriya: github.com/Nodirjn/TitrateRL · Faqat
 <h2>2. Nimani o‘lchaymiz va qaysi usullardan foydalanamiz</h2>
 <table>
 <tr><th style="width:26%">Nima</th><th>Mazmuni</th></tr>
-<tr><td>Asosiy ko‘rsatkich</td><td><b>TIR</b>: 13–24-haftalarda glyukoza 70–180 mg/dL oralig‘ida bo‘lgan vaqt ulushi. Qancha yuqori bo‘lsa, shuncha yaxshi.</td></tr>
+<tr><td>Asosiy ko‘rsatkich</td><td><b>TIR</b>: 21–24-haftalarda (davolashni ushlab turish bosqichi) glyukoza 70–180 mg/dL oralig‘ida bo‘lgan vaqt ulushi, shovqinsiz plazma glyukozasidan. Qancha yuqori bo‘lsa, shuncha yaxshi.</td></tr>
 <tr><td>Xavfsizlik ko‘rsatkichlari</td><td><b>TBR&lt;70</b> va <b>TBR&lt;54</b>: glyukoza 70 va 54 mg/dL dan past bo‘lgan vaqt (gipoglikemiya). Qancha past bo‘lsa, shuncha yaxshi. Konsensus maqsadlari: TBR&lt;70 &lt; 4 %, TBR&lt;54 &lt; 1 %.</td></tr>
 <tr><td>Muhit</td><td>Bir qadam = bir kun, 168 kun (24 hafta). Harakat: dozani −4, −2, 0, +2 yoki +4 birlikka o‘zgartirish. Har qanday siyosat uchun qat’iy chegara: 7 kunda ko‘pi bilan +8 birlik, ko‘pi bilan 1 birlik/kg.</td></tr>
 <tr><td>Algoritm</td><td><b>PPO</b> (Proximal Policy Optimization, Stable-Baselines3), 33 ta kirish belgisi, 64×64 neyron tarmoq.</td></tr>
