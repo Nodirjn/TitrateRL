@@ -25,18 +25,28 @@ DISCLAIMER = (
 )
 ROOT = Path(__file__).resolve().parents[1]
 # Agents trained locally (runs/) and the released pilot agents committed to the repo (models/).
-AGENT_DIRS = (ROOT / "runs", ROOT / "models" / "pilot", Path("runs"))
+# (directory, label suffix); full-protocol agents first, pilot agents keep a "(pilot)" label
+AGENT_DIRS = (
+    (ROOT / "models" / "full", ""),
+    (ROOT / "runs", ""),
+    (Path("runs"), ""),
+    (ROOT / "models" / "pilot", " (pilot)"),
+)
 
 
 def discover_checkpoints() -> dict[str, dict]:
     """Trained agents: ``<dir>/<run_id>/best_model.zip`` with its ``run.json``."""
     found: dict[str, dict] = {}
-    run_files = sorted({p.resolve() for d in AGENT_DIRS for p in d.glob("*/run.json")})
-    for run_json in run_files:
-        model = run_json.parent / "best_model.zip"
-        if model.exists():
+    seen: set[Path] = set()
+    for directory, suffix in AGENT_DIRS:
+        for run_json in sorted(directory.glob("*/run.json")):
+            model = run_json.parent / "best_model.zip"
+            name = run_json.parent.name + suffix
+            if run_json.resolve() in seen or name in found or not model.exists():
+                continue
+            seen.add(run_json.resolve())
             cfg = json.loads(run_json.read_text())["config"]
-            found[run_json.parent.name] = {
+            found[name] = {
                 "path": model,
                 "algo": cfg["algo"],
                 "obs_mode": cfg["obs_mode"],
