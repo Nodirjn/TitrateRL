@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<title>TitrateRL — loyihaning to‘liq qo‘llanmasi</title>
+<style>
+@page { size: A4; margin: 17mm; }
+:root { --navy:#1B1F3B; --coral:#B4432A; --teal:#0A6F79; --muted:#4A5068; --line:#DCD5C8; --soft:#F4F1EA; }
+body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 10pt; line-height: 1.5; color:#23273F; margin:0; }
+h1 { font-size: 22pt; color: var(--navy); margin: 0 0 4pt; line-height:1.2; }
+h2 { font-size: 14pt; color: var(--navy); margin: 18pt 0 6pt; border-bottom: 1.5pt solid var(--coral); padding-bottom: 3pt; page-break-after: avoid; }
+h3 { font-size: 11pt; color: var(--navy); margin: 11pt 0 4pt; page-break-after: avoid; }
+p { margin: 4pt 0 6pt; }
+.sub { color: var(--muted); font-size: 11pt; margin-bottom: 8pt; }
+.meta { font-size: 9pt; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 9pt; page-break-inside: avoid; }
+th, td { border: 0.6pt solid var(--line); padding: 3.5pt 6pt; text-align: left; vertical-align: top; }
+th { background: var(--soft); color: var(--navy); }
+.box { background: var(--soft); border-left: 3pt solid var(--teal); padding: 6pt 10pt; margin: 8pt 0; page-break-inside: avoid; }
+.warn { border-left-color: var(--coral); }
+.learn { background:#EEF5F6; border-left: 3pt solid var(--teal); padding: 6pt 10pt; margin: 8pt 0; page-break-inside: avoid; }
+.learn b.t { color: var(--teal); }
+.formula { font-family: "DejaVu Sans Mono", monospace; font-size: 9pt; background:#FAF8F3; border:0.6pt solid var(--line); padding: 5pt 8pt; margin: 5pt 0 8pt; white-space: pre-wrap; page-break-inside: avoid; }
+code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.6pt; background:#F2EFE8; padding: 0 2pt; }
+ul, ol { margin: 3pt 0 7pt 0; padding-left: 16pt; }
+li { margin: 2pt 0; }
+.ok { color: var(--teal); font-weight: bold; }
+.bad { color: var(--coral); font-weight: bold; }
+.cover { border-bottom: 2pt solid var(--navy); padding-bottom: 8pt; margin-bottom: 8pt; }
+.toc { columns: 2; font-size: 9.5pt; margin: 6pt 0; }
+.toc li { break-inside: avoid; }
+.flow { display:flex; flex-wrap:wrap; align-items:center; gap:4pt; margin:8pt 0 10pt; font-size: 8.6pt; page-break-inside: avoid; }
+.flow .n { border:1pt solid var(--navy); border-radius:4pt; padding:4pt 6pt; background:#fff; text-align:center; }
+.flow .n b { display:block; color: var(--navy); }
+.flow .a { color: var(--coral); font-weight: bold; }
+.pb { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+<h1>TitrateRL — loyihaning to‘liq qo‘llanmasi</h1>
+<p class="sub">Boshidan oxirigacha: muammo, simulyator, mustahkamlab o‘rganish, xavfsizlik, baholash, statistika, natijalar va nimalarni o‘rganish kerak</p>
+<p class="meta">4-SRC-10-804 Scientific Research and Communication · Central Asian University · Rahbar: Dr. Eugene Castro<br>
+Jamoa: Boburmirzo Uchqunov, Nodirjon Khabibullaev, Ibrohim Abralov, Abdurashid Abdusattarov · Holat: 2026-yil 25-noyabr (12-hafta)<br>
+Repozitoriya: github.com/Nodirjn/TitrateRL · Faqat in silico tadqiqot, tibbiy maslahat emas</p>
+</div>
+
+<div class="box"><b>Qanday o‘qish kerak.</b> Har bir bo‘lim uch qismdan iborat: <b>nima qilyapmiz</b>, <b>qanday usul bilan va nega aynan shu usul</b>, va yashil qutida <b>nimani o‘rganish kerak</b>. Kod qayerda ekanini ham ko‘rsatdim (<code>src/titraterl/...</code>). Oxirida taqdimotda beriladigan savollarga tayyor javoblar va lug‘at bor.</div>
+
+<h3>Mundarija</h3>
+<ol class="toc">
+<li>Muammo: 2-tip diabet va bazal insulin</li>
+<li>Tadqiqot savollari va gipotezalar</li>
+<li>Butun tizim bir qarashda</li>
+<li>Simulyator: virtual bemor tanasi</li>
+<li>Sensorlar va kundalik hayot (ovqat, ukol)</li>
+<li>Virtual kohorta: 150 bemor</li>
+<li>Simulyatorni tekshirish: V1–V5</li>
+<li>Masalani RL tiliga o‘girish (MDP)</li>
+<li>Mustahkamlab o‘rganish asoslari</li>
+<li>PPO algoritmi batafsil</li>
+<li>Mukofot funksiyalari R1–R3</li>
+<li>Xavfsizlik shield’i</li>
+<li>Klinik taqqoslash usullari B0–B4</li>
+<li>O‘qitish protokoli</li>
+<li>Baholash va ko‘rsatkichlar</li>
+<li>Statistik usullar</li>
+<li>Natijalar</li>
+<li>Dasturiy injiniring</li>
+<li>Cheklovlar</li>
+<li>Kim nimani o‘rganishi kerak</li>
+<li>Ehtimoliy savollar va javoblar</li>
+<li>Lug‘at</li>
+</ol>
+
+<h2>1. Muammo: 2-tip diabet va bazal insulin</h2>
+<p><b>2-tip diabet (T2D)</b> — tana insulinga yomon javob beradi (insulin rezistentligi) va oshqozon osti bezi yetarli insulin ishlab chiqarmaydi. Natijada qondagi glyukoza (qand) doimiy baland bo‘ladi. Uzoq muddatli baland qand ko‘z, buyrak, nerv va yurak-qon tomirlariga zarar yetkazadi.</p>
+<p>Tabletkalar yetmay qolganda shifokorlar odatda <b>bazal insulin</b> buyuradi: kuniga bir marta (ko‘pincha kechqurun) uzoq ta’sir qiluvchi insulin, masalan <b>glargin</b>, ukol qilinadi. U 24 soat davomida bir tekis ishlaydi va asosan <b>och qoringa glyukozani (FPG)</b> pasaytiradi.</p>
+<p>Muammo shundaki, har bir bemorga kerakli doza har xil. Shuning uchun past dozadan (masalan 10 birlik, ya’ni 10 U) boshlanadi va haftalar davomida asta-sekin oshiriladi. Buni <b>titratsiya</b> deyiladi. Juda sekin oshirilsa, bemor uzoq vaqt baland qand bilan yuradi. Juda tez oshirilsa, <b>gipoglikemiya</b> (qand 70 mg/dL dan past tushishi) bo‘ladi. Bu xavfli: titroq, hushdan ketish, og‘ir holatda o‘lim.</p>
+<p>Bugun titratsiya oddiy klinik qoidalar bilan qilinadi, masalan: “har 3 kunda, agar ertalabki qand 100 dan yuqori bo‘lsa, +2 U”. Bu qoidalar hamma bemorga bir xil va bemorning insulinga sezgirligini hisobga olmaydi.</p>
+<div class="box"><b>Bizning g‘oyamiz:</b> tajribadan o‘rganadigan agent (<b>reinforcement learning</b>) har bir bemorga moslashib, qandni me’yorda ko‘proq ushlab turishi va shu bilan birga xavfsiz qolishi mumkinmi? Buni odamlarda sinab bo‘lmaydi (axloqan mumkin emas), shuning uchun hamma narsa <b>in silico</b>, ya’ni kompyuter simulyatsiyasida qilinadi.</div>
+<div class="learn"><b class="t">O‘rganish kerak:</b> glyukoza va insulin fiziologiyasi asoslari; 1-tip va 2-tip diabet farqi; bazal va bolus insulin farqi; FPG, HbA1c, CGM nima; gipoglikemiya darajalari (1-daraja &lt; 70, 2-daraja &lt; 54 mg/dL). Manba: ADA Standards of Care (insulin bo‘limi); Battelino va boshq., 2019, “Clinical targets for CGM data interpretation” (Diabetes Care) — TIR maqsadlari shu maqoladan.</div>
+
+<h2>2. Tadqiqot savollari va gipotezalar</h2>
+<p>Ilmiy loyihada savol va uni tekshirish mezoni <b>oldindan</b> yoziladi (pre-registration). Shunda natijani ko‘rib, keyin mezonni o‘zgartirish imkoni bo‘lmaydi. Bizda uchta savol bor:</p>
+<table>
+<tr><th style="width:8%">Savol</th><th>Savol mazmuni</th><th style="width:43%">Gipoteza va mezon</th></tr>
+<tr><td>RQ1</td><td>Mukofot funksiyasining tuzilishi samaradorlik va xavfsizlik muvozanatiga qanday ta’sir qiladi?</td><td><b>H1:</b> R3 (gipoglikemiya jazosi bilan) R1 ga nisbatan TBR&lt;70 ni kamaytiradi, TIR yo‘qotish esa ≤ 5 foiz punkt (pp)</td></tr>
+<tr><td>RQ2</td><td>Shield’li PPO agenti ko‘rilmagan bemorlarda klinik qoidalardan yaxshiroqmi?</td><td><b>H2:</b> B1, B2, B3 ning har biriga nisbatan TIR ≥ 5 pp yuqori va gipoglikemiya bo‘yicha yomon emas (non-inferiority chegarasi 1 pp)</td></tr>
+<tr><td>RQ3</td><td>Agentning ustunligi bemor turiga bog‘liqmi?</td><td><b>H3:</b> insulin sezgirligi qancha past bo‘lsa (ρ_SI kichik), ustunlik shuncha katta (manfiy Spearman korrelyatsiyasi)</td></tr>
+</table>
+<p><b>“pp” (foiz punkt)</b> — ikki foizning ayirmasi. 58 % va 55 % farqi 3 pp, lekin “3 %” emas.</p>
+<div class="learn"><b class="t">O‘rganish kerak:</b> ilmiy gipoteza qanday yoziladi; pre-registration nima va nega kerak; “statistik ahamiyatli” va “klinik ahamiyatli” farqi (bizda H2 aynan shu farq tufayli o‘tmadi); superiority va non-inferiority testlar.</div>
+
+<h2>3. Butun tizim bir qarashda</h2>
+<div class="flow">
+<div class="n"><b>Kohorta</b>150 virtual bemor</div><span class="a">→</span>
+<div class="n"><b>Simulyator</b>Dalla Man T2D + glargin</div><span class="a">→</span>
+<div class="n"><b>Muhit (env)</b>1 qadam = 1 kun</div><span class="a">→</span>
+<div class="n"><b>Agent / qoida</b>PPO yoki B0–B4</div><span class="a">→</span>
+<div class="n"><b>Shield</b>xavfsizlik filtri</div><span class="a">→</span>
+<div class="n"><b>Baholash</b>metrikalar + statistika</div><span class="a">→</span>
+<div class="n"><b>Hisobot, dashboard</b>natijalar</div>
+</div>
+<p>Har bir qatlam alohida modul va ular orasida qat’iy interfeys bor. Masalan klinik qoida ham, o‘qitilgan agent ham bir xil <code>Policy</code> interfeysiga ega, shuning uchun baholash kodi ikkalasini bir xil yo‘l bilan ishga tushiradi.</p>
+<table>
+<tr><th style="width:30%">Papka</th><th>Vazifasi</th></tr>
+<tr><td><code>simulation/</code></td><td>Bemor modeli (tenglamalar), integrator, ovqat stsenariylari, sensorlar</td></tr>
+<tr><td><code>cohort/</code></td><td>150 virtual bemorni yaratish va bo‘lish</td></tr>
+<tr><td><code>envs/</code></td><td>Gymnasium muhiti, kuzatuv, mukofotlar, shield</td></tr>
+<tr><td><code>policies/</code></td><td>Klinik qoidalar B0–B4 va o‘qitilgan agent adapteri</td></tr>
+<tr><td><code>training/</code></td><td>PPO/DQN o‘qitish, eng yaxshi checkpoint’ni tanlash</td></tr>
+<tr><td><code>evaluation/</code>, <code>metrics/</code></td><td>Epizodlarni yurgizish, metrikalar, statistik testlar, hisobot</td></tr>
+<tr><td><code>validation/</code></td><td>V1–V5 tekshiruvlari va 12 ta system test</td></tr>
+<tr><td><code>dashboard/</code></td><td>Streamlit interaktiv ilovasi</td></tr>
+</table>
+
+<h2>4. Simulyator: virtual bemor tanasi</h2>
+<h3>4.1 Dalla Man modeli</h3>
+<p>Tananing glyukoza-insulin tizimini <b>oddiy differensial tenglamalar (ODE)</b> bilan tasvirlaymiz. Biz Dalla Man, Rizza va Cobelli (2007) modelini va uning 2-tip diabet uchun e’lon qilingan parametrlarini ishlatamiz. Bu model 1-tip diabet uchun FDA tomonidan preklinik sinovlarda qabul qilingan UVA/Padova simulyatorining asosi. Modelda <b>15 ta holat o‘zgaruvchisi</b> bor, ular quyidagi kichik tizimlarga bo‘linadi:</p>
+<ul>
+<li><b>Ovqat hazm qilish:</b> oshqozondagi qattiq va suyuq ovqat, ichak, glyukozaning qonga so‘rilishi.</li>
+<li><b>Glyukoza kinetikasi:</b> plazmadagi glyukoza va to‘qimalardagi glyukoza (ikki kompartment).</li>
+<li><b>Insulin kinetikasi:</b> plazma va jigardagi insulin.</li>
+<li><b>Jigar:</b> jigarning glyukoza ishlab chiqarishi (insulin uni bostiradi).</li>
+<li><b>Glyukozadan foydalanish:</b> mushak va yog‘ to‘qimasi insulin ta’sirida glyukozani yutadi.</li>
+<li><b>Beta-hujayra sekretsiyasi:</b> 2-tip diabetda bemorning o‘z oshqozon osti bezi hali biroz insulin chiqaradi; bu qism shuni modellashtiradi.</li>
+<li><b>Buyrak:</b> qand juda baland bo‘lganda siydik bilan chiqishi.</li>
+</ul>
+<p>Har bir bemor o‘zining dastlabki (insulinsiz) och qoringa glyukozasi <code>Gb</code> da muvozanatda bo‘lishi uchun ba’zi bazal parametrlar har bir bemorga qayta hisoblanadi (<code>derive_basal</code>).</p>
+
+<h3>4.2 Glargin modeli (bizning qo‘shimchamiz)</h3>
+<p>Asl modelda uzoq ta’sirli insulin yo‘q, shuning uchun teri ostidagi glargin uchun <b>ikki kompartmentli so‘rilish modeli</b> qo‘shdik: ukol qilingan insulin avval teri ostida “depo” hosil qiladi, sekin eriydi (yarim yemirilish davri taxminan 28 soat), keyin qonga o‘tadi. Parametrlar V2 tekshiruvi o‘tadigan qilib tanlangan: 24 soatlik profil tekis va 4-dozadan keyin barqaror holat. Ukol har kuni soat 21:00 da qilinadi (Treat-to-Target sinovidagi kabi).</p>
+
+<h3>4.3 Sonli yechim: RK4 va Numba</h3>
+<p>Tenglamalarni <b>Runge–Kutta 4-tartibli (RK4)</b> usuli bilan 1 daqiqalik qadamda yechamiz. 24 hafta taxminan 242 000 qadam. Python sekin bo‘lgani uchun hisoblash funksiyalari <b>Numba</b> bilan mashina kodiga kompilyatsiya qilinadi. Natijada bitta 24 haftalik epizod taxminan 0,2 soniya oladi. Bu muhim, chunki o‘qitishda millionlab kun simulyatsiya qilinadi.</p>
+<div class="formula">RK4 (bitta qadam, h = 1 daqiqa):
+k1 = f(t, x)
+k2 = f(t + h/2, x + h·k1/2)
+k3 = f(t + h/2, x + h·k2/2)
+k4 = f(t + h,   x + h·k3)
+x(t+h) = x + h·(k1 + 2k2 + 2k3 + k4)/6</div>
+<p><b>Tekshiruv:</b> bizning tenglamalar ochiq kodli <b>simglucose</b> kutubxonasi bilan 10⁻⁹ aniqlikda bir xil natija beradi, integrator esa SciPy’ning yuqori aniqlikdagi yechuvchisi bilan solishtirilgan.</p>
+<div class="learn"><b class="t">O‘rganish kerak:</b> ODE nima, holat o‘zgaruvchisi, kompartment modellar; Eyler va RK4 usullari, qadam o‘lchami va aniqlik; Numba nima uchun tezlashtiradi (JIT kompilyatsiya). Manba: Dalla Man, Rizza, Cobelli, “Meal simulation model of the glucose-insulin system”, IEEE TBME, 2007; simglucose GitHub repozitoriyasi; har qanday sonli usullar darsligining RK4 bobi.</div>
+
+<h2>5. Sensorlar va kundalik hayot</h2>
+<p>Agent bemorning “haqiqiy” qandini emas, faqat <b>o‘lchangan</b> qiymatlarni ko‘radi, xuddi real hayotdagidek:</p>
+<ul>
+<li><b>CGM</b> (uzluksiz glyukoza monitori): har 5 daqiqada o‘lchov, kuniga 288 ta. Xatolik modeli Breton va Kovatchev (2008) bo‘yicha: vaqt bo‘yicha bog‘langan shovqin (AR(1) jarayon, Johnson SU o‘zgartirishi). Diapazon 39–400 mg/dL.</li>
+<li><b>SMBG</b> (barmoqdan o‘lchash): ertalab bir marta, och qoringa. Xatolik: 100 dan past qiymatlarda ±7,5 mg/dL, yuqorida ±7,5 %. Bu ISO 15197 standartiga mos.</li>
+</ul>
+<p><b>Ovqat stsenariysi:</b> nonushta 45 g uglevod (07:30–08:30), tushlik 70 g (12:00–13:00), kechki ovqat 80 g (18:30–19:30), 30 % ehtimol bilan 10 g yengil tamaddi. Har bir ovqat miqdori ±20 % va vaqti tasodifiy o‘zgaradi.</p>
+<p><b>Ukolni o‘tkazib yuborish</b> (12-haftada qo‘shildi): har kuni ma’lum ehtimol bilan bemor ukolni qilmaydi. Bu alohida tasodifiy oqim bilan qilinadi, shuning uchun boshqa tasodifiy narsalar (ovqat, shovqin) o‘zgarmaydi.</p>
+<p><b>Muhim:</b> yakuniy natijalar <b>shovqinsiz haqiqiy plazma glyukozasidan</b> hisoblanadi, sensor xatosi esa faqat agent ko‘radigan kuzatuvga ta’sir qiladi.</p>
+<div class="learn"><b class="t">O‘rganish kerak:</b> CGM va SMBG qanday ishlaydi; avtoregressiv AR(1) jarayon; tasodifiy sonlar generatori va seed tushunchasi.</div>
+
+<h2>6. Virtual kohorta: 150 bemor</h2>
+<p>Hamma bemor bir xil bo‘lsa, natija hech narsani anglatmaydi, shuning uchun 150 ta har xil virtual bemor yaratamiz. Har biriga:</p>
+<table>
+<tr><th style="width:30%">Xususiyat</th><th>Qanday tanlanadi</th></tr>
+<tr><td>Dastlabki och qoringa glyukoza <code>Gb</code></td><td>Normal taqsimot, o‘rtacha 196, SD 48, [140, 300] mg/dL oralig‘ida (Treat-to-Target sinovidagi bemorlarga yaqin)</td></tr>
+<tr><td>Tana vazni</td><td>Kesilgan normal taqsimot, [50, 150] kg</td></tr>
+<tr><td><b>ρ_SI</b> — insulin sezgirligi koeffitsiyenti</td><td>Log-normal, mediana 2,2, σ = 0,35. Insulin ta’sirida glyukoza yutilishini va jigar ishlab chiqarishining bostirilishini masshtablaydi</td></tr>
+<tr><td><b>ρ_β</b> — beta-hujayra funksiyasi koeffitsiyenti</td><td>Log-normal, mediana 1,0, σ = 0,3. Bemorning o‘z insulin sekretsiyasini masshtablaydi</td></tr>
+</table>
+<p>Bemorlar <b>90 / 30 / 30</b> ga bo‘linadi: o‘qitish (train), validatsiya (val) va test. Bo‘lish ρ_SI tertillari bo‘yicha <b>stratifikatsiya</b> qilinadi, ya’ni har bir guruhda sezgir, o‘rtacha va rezistent bemorlar teng ulushda. Hammasi bitta seed (2026) dan qayta tiklanadi.</p>
+<div class="box"><b>Nega uch guruh?</b> Agent faqat train bemorlarda o‘qiydi. Validatsiya bemorlarida eng yaxshi model va mukofot tanlanadi. Test bemorlari faqat bir marta, oxirida ishlatiladi. Bu mashinaviy o‘qitishdagi asosiy qoida: aks holda natija ortiqcha optimistik bo‘ladi (overfitting).</div>
+<div class="learn"><b class="t">O‘rganish kerak:</b> normal va log-normal taqsimotlar; stratifikatsiyalangan bo‘lish; train/validation/test farqi va data leakage.</div>
+
+<h2>7. Simulyatorni tekshirish: V1–V5 (gate G1)</h2>
+<p>Simulyatorga ishonishdan oldin uni tekshiramiz. Bu reja bo‘yicha <b>G1 darvozasi</b>.</p>
+<table>
+<tr><th style="width:7%"></th><th>Nima tekshiriladi</th><th style="width:30%">Natija</th></tr>
+<tr><td>V1</td><td>Sonli to‘g‘rilik: RK4 SciPy bilan mos, muvozanat saqlanadi, simglucose bilan bir xil</td><td class="ok">O‘tdi</td></tr>
+<tr><td>V2</td><td>Glargin profili tekis (≤ 25 % tebranish), 4-dozadan keyin barqaror holat</td><td class="ok">O‘tdi</td></tr>
+<tr><td>V3</td><td>75 g glyukoza ichilgandagi javob (cho‘qqi 312 mg/dL, 130-daqiqada)</td><td>Hujjatlashtirildi</td></tr>
+<tr><td>V4</td><td>Treat-to-Target klinik sinovini takrorlash: 24-hafta FPG, yakuniy doza, maqsadga yetganlar ulushi</td><td class="bad">Asosiy kohortada o‘tmadi; tushuntirildi</td></tr>
+<tr><td>V5</td><td>Haddan tashqari doza chuqur gipoglikemiyaga olib keladi</td><td>Hujjatlashtirildi</td></tr>
+</table>
+<p><b>V4 tarixi.</b> Bizning virtual bemorlar haqiqiy bemorlardan yaxshiroq natija ko‘rsatdi: 24-haftada FPG 99,6 mg/dL (sinovda 117). 12-haftada 27 ta sozlamani sinadik (ρ_SI medianasi × tarqoqligi × ukolni o‘tkazib yuborish). Xulosa: tarqoqlik farqni yopmaydi, <b>ukolni o‘tkazib yuborish yopadi</b>. Mediana 3,0 va 15 % o‘tkazib yuborishda V4 to‘liq o‘tadi (FPG 111,2; doza 0,53 U/kg; 32 % maqsadga yetadi; sinovda 117; 0,48; 36 %).</p>
+<p><b>Qaror:</b> agentlar asosiy kohortada o‘qitilgani uchun uni o‘zgartirmadik. Kalibrlangan sharoit esa agentlarni qayta o‘qitmasdan <b>robustlik testi</b> sifatida ishlatildi.</p>
+<div class="learn"><b class="t">O‘rganish kerak:</b> model verifikatsiyasi va validatsiyasi farqi (verification: “tenglamani to‘g‘ri yechyapmizmi?”, validation: “to‘g‘ri tenglamani yechyapmizmi?”); sezgirlik tahlili. Manba: Riddle va boshq., 2003, “The Treat-to-Target Trial” (Diabetes Care).</div>
+
+<h2>8. Masalani RL tiliga o‘girish (MDP)</h2>
+<p>RL ishlashi uchun masalani <b>Markov qaror jarayoni (MDP)</b> ko‘rinishida yozamiz: holat → harakat → mukofot → yangi holat. Kod: <code>envs/titration_env.py</code>, nomi <code>TitrateRL/T2D-v0</code>.</p>
+<table>
+<tr><th style="width:22%">MDP qismi</th><th>Bizda</th></tr>
+<tr><td>Qadam</td><td>1 kun (07:00 → keyingi kun 07:00)</td></tr>
+<tr><td>Epizod</td><td>168 kun = 24 hafta, boshlang‘ich doza 10 U</td></tr>
+<tr><td>Harakat (action)</td><td>5 ta variant: dozani −4, −2, 0, +2, +4 U ga o‘zgartirish (<code>Discrete(5)</code>)</td></tr>
+<tr><td>Kuzatuv (observation)</td><td>Har kuni 11 ta belgi × oxirgi 3 kun = <b>33 ta son</b> (pastdagi jadval)</td></tr>
+<tr><td>Mukofot</td><td>Kunlik CGM bo‘yicha R1, R2 yoki R3 (11-bo‘lim)</td></tr>
+<tr><td>Chegaralar</td><td>Har qanday siyosat uchun: 7 kunda jami oshirish ≤ 8 U, doza ≤ 1 U/kg. Muhit buni o‘zi majburlaydi</td></tr>
+</table>
+<table>
+<tr><th style="width:30%">Kunlik belgi</th><th>Ma’nosi</th></tr>
+<tr><td>fasting_smbg</td><td>Ertalabki barmoq o‘lchovi</td></tr>
+<tr><td>dose_per_kg</td><td>Joriy doza / vazn</td></tr>
+<tr><td>applied_change</td><td>Kecha qo‘llangan o‘zgarish (chegaralardan keyin)</td></tr>
+<tr><td>cgm_tir, cgm_tbr70, cgm_tar180</td><td>Shu kungi CGM bo‘yicha diapazonda, past va baland vaqt</td></tr>
+<tr><td>cgm_mean, cgm_cv</td><td>O‘rtacha glyukoza va o‘zgaruvchanlik koeffitsiyenti</td></tr>
+<tr><td>hypo_events_72h</td><td>Oxirgi 72 soatdagi gipoglikemiya hodisalari soni</td></tr>
+<tr><td>body_weight, time_fraction</td><td>Vazn va epizodning qancha qismi o‘tgani</td></tr>
+</table>
+<p>Hamma belgilar [0, 1] oralig‘iga masshtablanadi, bu neyron tarmoq o‘qishini osonlashtiradi. Oxirgi 3 kun birga berilishi agentga tendensiyani ko‘rish imkonini beradi (qand pasayyaptimi yoki ko‘tarilyaptimi).</p>
+<div class="learn"><b class="t">O‘rganish kerak:</b> MDP ta’rifi (S, A, P, R, γ); Markov xususiyati; Gymnasium API (<code>reset</code>, <code>step</code>, <code>observation_space</code>, <code>action_space</code>). Manba: Gymnasium hujjatlari (gymnasium.farama.org), “Basic Usage” va “Make your own environment” bo‘limlari.</div>
+
+<h2>9. Mustahkamlab o‘rganish (RL) asoslari</h2>
+<p>RL’da <b>agent</b> muhit bilan muloqot qiladi: holatni ko‘radi, harakat tanlaydi, mukofot oladi. Maqsad — uzoq muddatda jami mukofotni maksimal qilish. Agent buni sinov va xato orqali o‘rganadi.</p>
+<div class="formula">Qaytim (return): G_t = r_{t+1} + γ·r_{t+2} + γ²·r_{t+3} + ...   (bizda γ = 0,99)
+Siyosat (policy): π(a | s)   — s holatda a harakat ehtimoli
+Qiymat funksiyasi: V(s) = E[G_t | s_t = s]   — s holatdan kutiladigan qaytim</div>
+<ul>
+<li><b>γ (diskont)</b> kelajakdagi mukofotni qanchalik muhim deb bilishni belgilaydi. 0,99 bo‘lsa, agent taxminan 100 kunlik oqibatni hisobga oladi. Bu muhim, chunki bugungi doza o‘zgarishining ta’siri bir necha kundan keyin ko‘rinadi.</li>
+<li><b>Exploration va exploitation:</b> agent yangi harakatlarni sinab ko‘rishi va bilgan yaxshi harakatini qilishi orasida muvozanat saqlaydi.</li>
+<li><b>Policy-based va value-based:</b> PPO siyosatni to‘g‘ridan-to‘g‘ri o‘rganadi (policy gradient), DQN esa har bir harakat qiymatini (Q) o‘rganadi.</li>
+</ul>
+<div class="learn"><b class="t">O‘rganish kerak:</b> Sutton va Barto, “Reinforcement Learning: An Introduction” (2-nashr, bepul onlayn), 1, 3, 6 va 13-boblar; OpenAI Spinning Up (spinningup.openai.com), “Part 1: Key Concepts in RL” va “Part 3: Intro to Policy Optimization”; David Silver RL kursi (YouTube, 1–2 va 7-ma’ruzalar).</div>
+
+<h2>10. PPO algoritmi batafsil</h2>
+<p><b>PPO (Proximal Policy Optimization)</b>, Schulman va boshq., 2017. Bu actor-critic algoritm:</p>
+<ul>
+<li><b>Actor</b> (aktyor) — siyosat tarmog‘i, 33 ta kirish → 5 ta harakat ehtimoli.</li>
+<li><b>Critic</b> (tanqidchi) — qiymat tarmog‘i V(s), harakat qanchalik yaxshi bo‘lganini baholashga yordam beradi.</li>
+</ul>
+<p>Ikkalasi ham 64×64 ikki qatlamli tarmoq, faollashtirish funksiyasi tanh.</p>
+<h3>10.1 Advantage va GAE</h3>
+<p><b>Advantage</b> A_t harakat o‘rtachadan qanchalik yaxshi bo‘lganini ko‘rsatadi. <b>GAE</b> (Generalized Advantage Estimation) uni barqaror baholaydi:</p>
+<div class="formula">δ_t = r_t + γ·V(s_{t+1}) − V(s_t)              (TD xatoligi)
+A_t = δ_t + (γλ)·δ_{t+1} + (γλ)²·δ_{t+2} + ...   (λ = 0,95)</div>
+<h3>10.2 Clipped maqsad funksiyasi (PPO’ning asosiy g‘oyasi)</h3>
+<div class="formula">r_t(θ) = π_θ(a_t | s_t) / π_eski(a_t | s_t)
+L(θ) = E[ min( r_t(θ)·A_t ,  clip(r_t(θ), 1−ε, 1+ε)·A_t ) ]     (ε = 0,2)</div>
+<p>Ma’nosi: yangi siyosat eskisidan juda uzoqlashib ketmasin (bir yangilanishda ehtimollar ±20 % dan ko‘p o‘zgarmaydi). Bu o‘qitishni barqaror qiladi, oddiy policy gradient esa ko‘pincha “sakrab” ketadi.</p>
+<h3>10.3 Bizning sozlamalar</h3>
+<table>
+<tr><th>Parametr</th><th>Qiymat</th><th>Ma’nosi</th></tr>
+<tr><td>n_envs</td><td>8</td><td>Bir vaqtda 8 ta bemor simulyatsiya qilinadi</td></tr>
+<tr><td>n_steps</td><td>256</td><td>Har bir yangilanishdan oldin har bir muhitda 256 kun yig‘iladi</td></tr>
+<tr><td>batch_size, n_epochs</td><td>64, 10</td><td>Yig‘ilgan ma’lumotdan 10 marta, 64 talik bo‘laklar bilan o‘qiladi</td></tr>
+<tr><td>learning_rate</td><td>3·10⁻⁴</td><td>Gradient qadami</td></tr>
+<tr><td>γ, λ, ε</td><td>0,99; 0,95; 0,2</td><td>Diskont, GAE, clip</td></tr>
+<tr><td>total_timesteps</td><td>10⁶</td><td>Bir run’da jami 1 million simulyatsiya kuni</td></tr>
+</table>
+<p><b>Nega PPO?</b> Barqaror, sozlashga kam sezgir, diskret harakatlar bilan yaxshi ishlaydi va Stable-Baselines3 kutubxonasida ishonchli amalga oshirilgan. <b>DQN</b> ham kodda bor (Should darajasidagi qo‘shimcha), lekin asosiy natijalar PPO’da.</p>
+<div class="learn"><b class="t">O‘rganish kerak:</b> Schulman va boshq., 2017, “Proximal Policy Optimization Algorithms” (arXiv:1707.06347); Spinning Up’dagi PPO sahifasi; “The 37 Implementation Details of PPO” (ICLR blog track, 2022); Stable-Baselines3 hujjatlari (PPO bo‘limi, callbacks). Neyron tarmoq asoslari: perseptron, faollashtirish funksiyasi, gradient tushish.</div>
+
+<h2>11. Mukofot funksiyalari R1–R3</h2>
+<p>Mukofot agentga “nima yaxshi” ekanini aytadi. Mukofotni noto‘g‘ri tanlash agentni noto‘g‘ri xatti-harakatga olib keladi (reward hacking). Shuning uchun RQ1 aynan shuni tekshiradi.</p>
+<table>
+<tr><th style="width:8%"></th><th style="width:42%">Formula (kunlik CGM bo‘yicha)</th><th>G‘oya</th></tr>
+<tr><td>R1</td><td>TIR (70–180 oralig‘idagi vaqt ulushi), [0, 1]</td><td>Faqat samaradorlik; gipoglikemiyani alohida jazolamaydi</td></tr>
+<tr><td>R2</td><td>−(Kovatchev xavf indeksi), [−1, 0] ga masshtablangan</td><td>Past va baland qandni nosimmetrik jazolaydi, past qand kuchliroq</td></tr>
+<tr><td>R3</td><td>TIR − 5·TBR&lt;70 − 10·TBR&lt;54</td><td>Gipoglikemiyani aniq va kuchli jazolaydi</td></tr>
+</table>
+<div class="formula">Kovatchev xavf funksiyasi:
+f(BG) = 1,509 · ( (ln BG)^1,084 − 5,381 )
+risk(BG) = 10 · f(BG)²     (BG = 112,5 mg/dL da nol, ikki tomonga o‘sadi)</div>
+<div class="learn"><b class="t">O‘rganish kerak:</b> reward shaping va reward hacking; Kovatchev va boshq., LBGI/HBGI indekslari (Diabetes Care, 1997–1998).</div>
+
+<h2>12. Xavfsizlik shield’i</h2>
+<p>Shield — agent va bemor orasidagi qoida asosidagi filtr (Alshiekh va boshq., 2018, “Safe RL via Shielding” g‘oyasidan). Faqat o‘lchangan qiymatlardan foydalanadi:</p>
+<ol>
+<li>Oxirgi 72 soatda 1-darajali gipoglikemiya (SMBG &lt; 70 yoki CGM hodisasi) bo‘lsa, doza oshirilmaydi.</li>
+<li>Oxirgi 24 soatda 2-darajali gipoglikemiya (&lt; 54) bo‘lsa, doza 20 % kamaytiriladi.</li>
+<li>Doza hech qachon maksimumdan oshmaydi.</li>
+</ol>
+<p>Shield <b>rasmiy kafolat bermaydi</b>: qilingan ukol baribir ta’sir qiladi. Shuning uchun gipoglikemiya mukofotda ham jazolanadi va alohida hisobotda ko‘rsatiladi. 12-haftaning eng muhim natijasi: bemorlar ukolni o‘tkazib yuborganda faqat shield’li agent hamma bemorni xavfsiz saqladi.</p>
+<div class="learn"><b class="t">O‘rganish kerak:</b> safe RL tushunchasi; constrained MDP va shielding farqi; Gymnasium wrapper’lari qanday ishlaydi (<code>envs/wrappers.py</code>).</div>
+
+<h2>13. Klinik taqqoslash usullari B0–B4</h2>
+<table>
+<tr><th style="width:24%">Usul</th><th>Qoidasi (maqsad FPG ≤ 100 mg/dL)</th></tr>
+<tr><td><b>B0</b> qat’iy doza</td><td>0,2 U/kg har kuni, titratsiyasiz. “Hech narsa qilmaslik” bazasi</td></tr>
+<tr><td><b>B1</b> AT.LANTUS (Davies, 2005)</td><td>Har 3 kunda: oxirgi 3 kunlik o‘rtacha FPG &gt; 100 bo‘lsa +2 U. &lt; 72 bo‘lsa oshirilmaydi; &lt; 70 bo‘lsa −10 %</td></tr>
+<tr><td><b>B2</b> Treat-to-Target (Riddle, 2003)</td><td>Har 7 kunda, 2 kunlik o‘rtacha FPG bo‘yicha: ≥ 180 → +8; 140–180 → +6; 120–140 → +4; 100–120 → +2 U. Haftada &lt; 72 bo‘lsa oshirilmaydi; &lt; 56 bo‘lsa −4 U</td></tr>
+<tr><td><b>B3</b> INSIGHT (Gerstein, 2006)</td><td>Har kuni: FPG &gt; 100 bo‘lsa +1 U; &lt; 70 bo‘lsa −10 %</td></tr>
+<tr><td><b>B4</b> chegara qoidasi</td><td>Simulyatorda sozlangan qoida (qo‘shimcha, Should darajasi)</td></tr>
+</table>
+<div class="learn"><b class="t">O‘rganish kerak:</b> uchta klinik maqola (Riddle 2003, Davies 2005, Gerstein 2006) — ularning dizayni va asosiy natijalari. Taqdimotda “nega aynan shu uchta?” deb so‘rashlari mumkin: ular eng ko‘p iqtibos qilingan va qoidalari aniq yozilgan.</div>
+
+<h2>14. O‘qitish protokoli</h2>
+<table>
+<tr><th style="width:16%">Bosqich</th><th>Nima</th><th style="width:30%">Natija</th></tr>
+<tr><td>1-bosqich (RQ1)</td><td>PPO + R1, R2, R3, shield’siz; har biri 5 seed × 10⁶ kun (15 run)</td><td>Hammasi tugadi</td></tr>
+<tr><td>Mukofot tanlash</td><td>Oldindan belgilangan qoida: gipoglikemiya maqsadlarini bemorlarning ≥ 90 % i bajargan mukofotlar orasida validatsiya TIR medianasi eng yuqorisi</td><td><b>R★ = R1</b> (60,7 % / 97 %)</td></tr>
+<tr><td>2-bosqich (RQ2)</td><td>PPO + R★ + shield; 5 seed × 10⁶ kun (5 run)</td><td>Hammasi tugadi</td></tr>
+</table>
+<ul>
+<li><b>Nega 5 seed?</b> RL natijasi tasodifga kuchli bog‘liq. 5 xil seed bilan o‘qitib, natija barqarormi yoki omadmi, ko‘ramiz. Bizda asosiy agentning 5 seed’i 57,6–58,2 % oralig‘ida, juda barqaror.</li>
+<li><b>Checkpoint tanlash:</b> har 50 000 qadamda model validatsiya bemorlarida baholanadi va eng yaxshisi saqlanadi (<code>best_model.zip</code>). Test bemorlari bu yerda ishlatilmaydi.</li>
+<li><b>Hisoblash:</b> har bir run bitta CPU yadrosida 30–50 daqiqa. Navbat skripti (<code>scripts/run_protocol.py</code>) to‘xtab qolsa, qolgan joyidan davom etadi.</li>
+</ul>
+
+<h2>15. Baholash va ko‘rsatkichlar</h2>
+<p>Har bir siyosat 30 ta test bemorida, har biri uchun 10 ta stsenariyda (jami 300 epizod) sinaladi. <b>Umumiy tasodifiy sonlar (CRN)</b>: bir xil bemor va stsenariyda hamma siyosat aynan bir xil ovqat, bir xil sensor shovqinini ko‘radi. Shunda farq faqat dozalashdan keladi va taqqoslash adolatli bo‘ladi.</p>
+<p>24 hafta fazalarga bo‘linadi: <b>titratsiya</b> (1–12-haftalar), <b>ushlab turish (maintenance)</b> (21–24-haftalar, doza barqarorlashgan davr) va <b>to‘liq</b> davr.</p>
+<table>
+<tr><th style="width:22%">Ko‘rsatkich</th><th>Ta’rifi</th><th style="width:28%">Klinik maqsad</th></tr>
+<tr><td><b>TIR</b></td><td>Vaqtning 70–180 mg/dL oralig‘idagi ulushi; <b>asosiy samaradorlik</b> (21–24-haftalarda)</td><td>&gt; 70 %</td></tr>
+<tr><td><b>TBR&lt;70</b></td><td>70 dan past vaqt; asosiy xavfsizlik</td><td>&lt; 4 %</td></tr>
+<tr><td><b>TBR&lt;54</b></td><td>54 dan past vaqt; og‘ir gipoglikemiya</td><td>&lt; 1 %</td></tr>
+<tr><td>TAR&gt;180</td><td>180 dan yuqori vaqt</td><td>&lt; 25 %</td></tr>
+<tr><td>CV</td><td>Glyukoza o‘zgaruvchanligi (SD / o‘rtacha)</td><td>≤ 36 %</td></tr>
+<tr><td>Yakuniy doza</td><td>U/kg; 0,5 dan oshsa “overbasalization” belgisi</td><td></td></tr>
+<tr><td>Maqsadga yetish vaqti</td><td>FPG 80–130 oralig‘iga yetguncha kunlar</td><td></td></tr>
+</table>
+<p>Bizning TIR’imiz 55–60 % atrofida, ya’ni klinik maqsaddan past. Buning sababi: faqat bazal insulin ovqatdan keyingi qand ko‘tarilishini to‘xtata olmaydi. Shuning uchun biz siyosatlarni <b>bir-biriga nisbatan</b> taqqoslaymiz.</p>
+<div class="learn"><b class="t">O‘rganish kerak:</b> Battelino 2019 konsensusi (TIR/TBR/TAR maqsadlari); paired (juftlangan) dizayn nima uchun kuchli; CRN g‘oyasi (variance reduction).</div>
+
+<h2>16. Statistik usullar</h2>
+<p>Har bir bemor uchun 10 stsenariy bo‘yicha o‘rtacha olinadi va har bir bemor bitta kuzatuv hisoblanadi (n = 30). PPO uchun 5 seed natijasi ham bemor darajasida o‘rtachalanadi. Hamma testlar <b>juftlangan</b>: bir xil bemorda ikki siyosat solishtiriladi.</p>
+<table>
+<tr><th style="width:24%">Usul</th><th>Nima uchun ishlatamiz</th></tr>
+<tr><td><b>Bootstrap 95 % ishonch oralig‘i</b></td><td>Bemorlarni qaytarib tanlash bilan 10 000 marta qayta namunalab, mediana TIR’ning noaniqligini baholaymiz. Taqsimot haqida taxmin talab qilmaydi</td></tr>
+<tr><td><b>Wilcoxon signed-rank testi</b></td><td>Juftlangan farqlar noldan kattami? Normal taqsimotni talab qilmaydi (t-testning parametrsiz muqobili). Bizda bir tomonlama</td></tr>
+<tr><td><b>Holm tuzatishi</b></td><td>H2’da 3 ta test (B1, B2, B3), shuning uchun tasodifan “topilma” chiqish xavfi oshadi. Holm p-qiymatlarni tartiblab, ketma-ket qattiqroq chegaraga solishtiradi: α/3, α/2, α/1</td></tr>
+<tr><td><b>Hodges–Lehmann baholovchisi</b></td><td>Effekt o‘lchami: juftlangan farqlarning barcha juft o‘rtachalari (Walsh o‘rtachalari) medianasi. Chetga chiqqan qiymatlarga chidamli</td></tr>
+<tr><td><b>Non-inferiority</b></td><td>“Yomon emas” degani: agent va klinik qoida TBR&lt;70 farqi o‘rtachasining 95 % bootstrap ishonch oralig‘i yuqori chegarasi 1 pp dan kichik bo‘lishi</td></tr>
+<tr><td><b>Spearman korrelyatsiyasi</b></td><td>H3: ρ_SI va TIR ustunligi orasidagi monoton bog‘liqlik (darajalar bo‘yicha)</td></tr>
+</table>
+<div class="formula">H2 qo‘llab-quvvatlanadi, agar B1, B2, B3 ning HAR BIRI uchun:
+  (i)   Holm bo‘yicha tuzatilgan Wilcoxon p &lt; 0,05,
+  (ii)  Hodges–Lehmann TIR ustunligi ≥ 5 pp,
+  (iii) TBR&lt;70 farqi o‘rtachasining 95 % bootstrap IO yuqori chegarasi &lt; 1 pp.</div>
+<div class="learn"><b class="t">O‘rganish kerak:</b> p-qiymat va α nima; bir va ikki tomonlama test; parametrik va parametrsiz testlar; ko‘p taqqoslash muammosi; bootstrap g‘oyasi (Efron va Tibshirani, “An Introduction to the Bootstrap”). SciPy’da: <code>scipy.stats.wilcoxon</code>, <code>scipy.stats.spearmanr</code>.</div>
+
+<h2>17. Natijalar (12-hafta, yakuniy)</h2>
+<table>
+<tr><th>Siyosat</th><th>TIR % (95 % IO)</th><th>TBR&lt;70</th><th>Maqsadni bajargan</th></tr>
+<tr><td>PPO R1</td><td>59,3 (54,2–67,1)</td><td>0,5 %</td><td>97 %</td></tr>
+<tr><td>PPO R2</td><td>58,5 (53,4–65,7)</td><td>0,4 %</td><td>90 %</td></tr>
+<tr><td><b>PPO R★ + shield (asosiy)</b></td><td><b>58,0 (52,9–66,0)</b></td><td><b>0,4 %</b></td><td><b>100 %</b></td></tr>
+<tr><td>PPO R3</td><td>55,3 (52,5–62,4)</td><td>0,0 %</td><td>100 %</td></tr>
+<tr><td>B2 Treat-to-Target</td><td>55,1 (51,4–63,0)</td><td>0,0 %</td><td>100 %</td></tr>
+<tr><td>B3 INSIGHT</td><td>54,6 (49,8–62,2)</td><td>0,0 %</td><td>100 %</td></tr>
+<tr><td>B1 AT.LANTUS</td><td>54,1 (49,2–60,8)</td><td>0,0 %</td><td>100 %</td></tr>
+<tr><td>B0 qat’iy doza</td><td>35,0 (21,2–53,2)</td><td>0,0 %</td><td>100 %</td></tr>
+</table>
+<ul>
+<li><b>H1 qo‘llab-quvvatlandi:</b> R3 gipoglikemiyani 0,5 % dan 0 % ga tushirdi, TIR yo‘qotish 4,0 pp (≤ 5).</li>
+<li><b>H2 qo‘llab-quvvatlanmadi:</b> ustunlik 2,2–3,8 pp, statistik ahamiyatli (p &lt; 0,001) va xavfsizlik bo‘yicha yomon emas, lekin 5 pp klinik chegaradan past.</li>
+<li><b>H3 qo‘llab-quvvatlanmadi:</b> ρ = −0,18, p = 0,17.</li>
+<li><b>Robustlik:</b> ukolni o‘tkazib yuboradigan bemorlarda RL ustunligi yo‘qoladi. Shield’siz agentlarda bemorlarning 17–37 % i gipoglikemiya maqsadidan chiqadi, shield’li agentda esa hech kim chiqmaydi.</li>
+</ul>
+<div class="box"><b>Bir jumlada:</b> RL klinik qoidalardan biroz yaxshi va xavfsiz, lekin farq klinik jihatdan katta emas. Real sharoitga yaqin holatda esa xavfsizlik shield’i hal qiluvchi ahamiyatga ega.</div>
+
+<h2>18. Dasturiy injiniring</h2>
+<ul>
+<li><b>GitHub Flow:</b> har bir ish alohida branch’da, Pull Request (PR) orqali ko‘rib chiqiladi va <code>main</code> ga birlashtiriladi.</li>
+<li><b>CI</b> (GitHub Actions): har bir PR’da kod uslubi (ruff), 92 ta tezkor test, sekin testlar va simulyatorning tezkor tekshiruvi avtomatik ishga tushadi.</li>
+<li><b>TDD</b> (testga asoslangan ishlab chiqish): simulyator uchun avval test yoziladi, keyin kod.</li>
+<li><b>CLI</b>: bitta buyruq bilan hamma narsa: <code>titraterl validate</code>, <code>train</code>, <code>evaluate</code>, <code>system-test</code>, <code>dashboard</code>.</li>
+<li><b>Konfiguratsiya YAML fayllarda</b> (<code>configs/</code>): har bir tajriba qayta takrorlanadigan.</li>
+<li><b>12 ta system test</b>: MVP talablari F1–F7 ga qarshi tekshiruv, 11 tasi o‘tadi.</li>
+<li><b>Dashboard</b> (Streamlit): bemor tanlab, siyosatlarni hafta-hafta solishtirish (0,6 soniyada).</li>
+</ul>
+<div class="learn"><b class="t">O‘rganish kerak:</b> Git asoslari (branch, commit, merge, PR); pytest; GitHub Actions; Python paket tuzilishi (<code>pyproject.toml</code>); Streamlit asoslari.</div>
+
+<h2>19. Cheklovlar (taqdimotda ochiq aytish kerak)</h2>
+<ul>
+<li>Hammasi in silico: bitta simulyator, virtual bemorlar. Natija real bemorlar uchun tavsiya emas.</li>
+<li>Asosiy kohorta V4’dan o‘tmaydi (bemorlar juda “intizomli”); kalibrlangan sharoit faqat robustlik testi sifatida ishlatilgan.</li>
+<li>Qo‘shimcha dorilar (masalan sulfonilmochevina), parhez va vazn o‘zgarishi modellashtirilmagan.</li>
+<li>Faqat bazal insulin, shuning uchun mutlaq TIR klinik maqsaddan past.</li>
+<li>Agent 24 hafta, bitta stsenariy turida o‘qitilgan; real hayot ancha xilma-xil.</li>
+</ul>
+
+<h2>20. Kim nimani o‘rganishi kerak</h2>
+<table>
+<tr><th style="width:22%">A’zo</th><th>Chuqur bilishi kerak</th><th style="width:32%">Asosiy manbalar</th></tr>
+<tr><td><b>Nodirjon</b><br>baholash, statistika, maqola</td><td>16-bo‘lim to‘liq: bootstrap, Wilcoxon, Holm, Hodges–Lehmann, non-inferiority, Spearman; TIR/TBR ta’riflari; H1–H3 mezonlari; IMRaD tuzilishi</td><td>Efron va Tibshirani; Battelino 2019; SciPy stats hujjatlari</td></tr>
+<tr><td><b>Abdurashid</b><br>RL agentlar</td><td>9–12, 14-bo‘limlar: MDP, PPO formulasi, GAE, mukofotlar, shield, checkpoint tanlash, seed’lar</td><td>Sutton va Barto; Spinning Up; Schulman 2017; SB3 hujjatlari</td></tr>
+<tr><td><b>Ibrohim</b><br>simulyator, kohorta</td><td>4–7-bo‘limlar: Dalla Man modeli, glargin, RK4, sensorlar, kohorta taqsimotlari, V1–V5 va V4 sezgirlik tahlili</td><td>Dalla Man 2007; Riddle 2003; simglucose</td></tr>
+<tr><td><b>Boburmirzo</b><br>injiniring</td><td>3 va 18-bo‘limlar: arxitektura, CI, testlar, CLI, dashboard, reliz; system testlar jadvali</td><td>Gymnasium, pytest, GitHub Actions, Streamlit hujjatlari</td></tr>
+</table>
+<p><b>Hamma uchun minimum:</b> 1, 2, 3, 15, 17 va 19-bo‘limlar. Har bir a’zo loyihani 2 daqiqada tushuntira olishi va “nega simulyator?”, “nega PPO?”, “H2 nega o‘tmadi?” savollariga javob bera olishi kerak.</p>
+
+<h2>21. Ehtimoliy savollar va javoblar</h2>
+<table>
+<tr><th style="width:36%">Savol</th><th>Javob</th></tr>
+<tr><td>Nega real bemor ma’lumotlari emas?</td><td>O‘qitilmagan dozalash siyosatini odamda sinash axloqan mumkin emas; ochiq T2D titratsiya ma’lumotlari yo‘q; simulyator — qabul qilingan preklinik qadam.</td></tr>
+<tr><td>Simulyator to‘g‘riligini qanday bilasiz?</td><td>V1–V5: sonli aniqlik, simglucose bilan bir xillik, glargin profili, klinik sinovni takrorlash. V4 asosiy kohortada o‘tmaydi va buning sababi ukolni o‘tkazib yuborish ekanini ko‘rsatdik.</td></tr>
+<tr><td>Nega PPO, boshqa algoritm emas?</td><td>Barqaror, diskret harakatlar bilan yaxshi, sozlashga kam sezgir, ishonchli kutubxona. DQN ham sinab ko‘rilgan (qo‘shimcha).</td></tr>
+<tr><td>Agent dozani haddan oshirmaydimi?</td><td>Uch qatlam: muhit chegarasi (≤ 8 U/hafta, ≤ 1 U/kg), shield, mukofotdagi jazo. ST-08 va ST-09 testlari buni tasdiqlaydi.</td></tr>
+<tr><td>H2 o‘tmadi — loyiha muvaffaqiyatsizmi?</td><td>Yo‘q. Ustunlik statistik ahamiyatli, lekin biz oldindan belgilagan klinik chegaradan kichik. Salbiy natijani halol aytish ilmiy jihatdan to‘g‘ri; robustlik tahlili esa shield muhimligini ko‘rsatdi.</td></tr>
+<tr><td>Taqqoslash adolatlimi?</td><td>Bir xil 30 ta ko‘rilmagan bemor, bir xil 10 stsenariy, bir xil ovqat va shovqin (CRN), statistik reja oldindan yozilgan.</td></tr>
+<tr><td>Nega TIR atigi 55–60 %?</td><td>Faqat bazal insulin ovqatdan keyingi ko‘tarilishni boshqara olmaydi; biz siyosatlarni bir-biriga nisbatan solishtiramiz.</td></tr>
+<tr><td>Natija takrorlanadimi?</td><td>Ha: kohorta, stsenariylar va o‘qitish seed’lar bilan aniqlangan; konfiguratsiyalar va modellar repozitoriyada; bitta buyruq bilan qayta ishga tushadi.</td></tr>
+</table>
+
+<h2>22. Lug‘at</h2>
+<table>
+<tr><th style="width:24%">Atama</th><th>Ma’nosi</th></tr>
+<tr><td>Agent</td><td>Qaror qabul qiluvchi dastur (bizda dozani tanlaydi)</td></tr>
+<tr><td>Bazal insulin</td><td>Kuniga bir marta qilinadigan uzoq ta’sirli insulin (glargin)</td></tr>
+<tr><td>Checkpoint</td><td>O‘qitish jarayonidagi model nusxasi</td></tr>
+<tr><td>CGM / SMBG</td><td>Uzluksiz glyukoza monitori / barmoqdan o‘lchash</td></tr>
+<tr><td>CRN</td><td>Umumiy tasodifiy sonlar: hamma siyosat bir xil tasodifiy sharoitni ko‘radi</td></tr>
+<tr><td>Epizod</td><td>Bitta to‘liq titratsiya kursi (168 kun)</td></tr>
+<tr><td>FPG</td><td>Och qoringa plazma glyukozasi</td></tr>
+<tr><td>Gipoglikemiya</td><td>Qand &lt; 70 (1-daraja) yoki &lt; 54 mg/dL (2-daraja)</td></tr>
+<tr><td>In silico</td><td>Kompyuter simulyatsiyasida</td></tr>
+<tr><td>MDP</td><td>Markov qaror jarayoni: holat, harakat, mukofot, o‘tish</td></tr>
+<tr><td>Mukofot (reward)</td><td>Agentga har qadamda beriladigan “baho”</td></tr>
+<tr><td>pp</td><td>Foiz punkt: ikki foiz ayirmasi</td></tr>
+<tr><td>PPO</td><td>Proximal Policy Optimization, bizning asosiy RL algoritmi</td></tr>
+<tr><td>Seed</td><td>Tasodifiy sonlar boshlang‘ich qiymati; bir xil seed bir xil natija beradi</td></tr>
+<tr><td>Shield</td><td>Xavfli harakatlarni to‘suvchi qoida filtri</td></tr>
+<tr><td>Siyosat (policy)</td><td>Holatdan harakatga qoida (klinik qoida yoki o‘qitilgan agent)</td></tr>
+<tr><td>Titratsiya</td><td>Dozani asta-sekin maqsadgacha moslash</td></tr>
+<tr><td>TIR / TBR / TAR</td><td>Diapazonda / pastda / yuqorida bo‘lgan vaqt ulushi</td></tr>
+<tr><td>ρ_SI, ρ_β</td><td>Bemorning insulin sezgirligi va beta-hujayra funksiyasi koeffitsiyentlari</td></tr>
+</table>
+<p class="meta">Batafsil: repozitoriyadagi <code>README.md</code>, <code>docs/results/full_protocol.md</code>, <code>docs/validation.md</code>, <code>docs/testing/system_test_report.md</code>, <code>DEMO.md</code> va loyiha taklifi (proposal).</p>
+
+</body>
+</html>
