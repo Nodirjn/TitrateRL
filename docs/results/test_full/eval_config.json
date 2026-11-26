@@ -1,0 +1,165 @@
+{
+  "split": "test",
+  "n_scenarios": 10,
+  "base_seed": 7,
+  "rule_policies": [
+    "b0_fixed",
+    "b1_atlantus",
+    "b2_treat_to_target",
+    "b3_insight"
+  ],
+  "checkpoints": [
+    {
+      "policy_id": "ppo_r1_s0",
+      "path": "runs/full/ppo_r1_s0/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r1_s1",
+      "path": "runs/full/ppo_r1_s1/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r1_s2",
+      "path": "runs/full/ppo_r1_s2/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r1_s3",
+      "path": "runs/full/ppo_r1_s3/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r1_s4",
+      "path": "runs/full/ppo_r1_s4/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r2_s0",
+      "path": "runs/full/ppo_r2_s0/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r2_s1",
+      "path": "runs/full/ppo_r2_s1/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r2_s2",
+      "path": "runs/full/ppo_r2_s2/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r2_s3",
+      "path": "runs/full/ppo_r2_s3/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r2_s4",
+      "path": "runs/full/ppo_r2_s4/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r3_s0",
+      "path": "runs/full/ppo_r3_s0/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r3_s1",
+      "path": "runs/full/ppo_r3_s1/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r3_s2",
+      "path": "runs/full/ppo_r3_s2/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r3_s3",
+      "path": "runs/full/ppo_r3_s3/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_r3_s4",
+      "path": "runs/full/ppo_r3_s4/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": false
+    },
+    {
+      "policy_id": "ppo_rstar_shield_s0",
+      "path": "runs/full/ppo_rstar_shield_s0/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": true
+    },
+    {
+      "policy_id": "ppo_rstar_shield_s1",
+      "path": "runs/full/ppo_rstar_shield_s1/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": true
+    },
+    {
+      "policy_id": "ppo_rstar_shield_s2",
+      "path": "runs/full/ppo_rstar_shield_s2/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": true
+    },
+    {
+      "policy_id": "ppo_rstar_shield_s3",
+      "path": "runs/full/ppo_rstar_shield_s3/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": true
+    },
+    {
+      "policy_id": "ppo_rstar_shield_s4",
+      "path": "runs/full/ppo_rstar_shield_s4/best_model.zip",
+      "algo": "ppo",
+      "obs_mode": "full",
+      "shield": true
+    }
+  ],
+  "primary_policy": "ppo_rstar_shield",
+  "output_dir": "results/test_full",
+  "log_trajectories": false,
+  "cohort": {},
+  "n_jobs": 2,
+  "h1_policies": [
+    "ppo_r1",
+    "ppo_r3"
+  ],
+  "h3_reference": null,
+  "pool_seeds": true,
+  "scenario": {}
+}

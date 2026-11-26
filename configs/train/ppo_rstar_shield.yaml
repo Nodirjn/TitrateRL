@@ -2,6 +2,8 @@
 # R* = R1: highest median validation TIR among rewards meeting the consensus targets in
 # >= 90 % of validation patients. Week 11 pilot (selected checkpoints, median validation TIR /
 # share meeting targets): R1 60.8 % / 93 %, R2 60.2 % / 90 %, R3 58.1 % / 100 %.
+# Full protocol, 5 seeds (median over seeds; docs/results/reward_selection_full.json):
+# R1 60.7 % / 97 %, R2 60.5 % / 93 %, R3 59.5 % / 100 % -> R* = R1 confirmed.
 run_name: ppo_rstar_shield
 algo: ppo
 reward: r1

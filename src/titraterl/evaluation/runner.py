@@ -134,6 +134,18 @@ def evaluate(
     return pd.DataFrame(rows), results
 
 
+def pool_training_seeds(df: pd.DataFrame) -> pd.DataFrame:
+    """Merge the training seeds of a configuration into one policy (proposal IV-D4).
+
+    ``ppo_r1_s0`` ... ``ppo_r1_s4`` become ``ppo_r1``; rule-based policies are unchanged.
+    Averaging over scenarios afterwards (``per_patient``) then averages over the
+    10 scenarios x 5 seeds, so every patient still contributes one paired value.
+    """
+    out = df.copy()
+    out["policy_id"] = out["policy_id"].str.replace(r"_s\d+$", "", regex=True)
+    return out
+
+
 def per_patient(df: pd.DataFrame, group: str = "policy_id") -> pd.DataFrame:
     """Average over scenarios so that every patient contributes one value per policy."""
     keys = [group, "patient_id", "split", "si_tertile", "rho_si"]

@@ -184,9 +184,10 @@ def load_trained_policies(runs_dir: Path) -> list[Any]:
     from titraterl.policies import SB3Policy
 
     out = []
-    pilot = Path(__file__).resolve().parents[3] / "models" / "pilot"
+    models = Path(__file__).resolve().parents[3] / "models"
     seen: set[str] = set()
-    run_files = [p for d in (Path(runs_dir), pilot) for p in sorted(d.glob("*/run.json"))]
+    dirs = (models / "full", Path(runs_dir), models / "pilot")  # full-protocol agents first
+    run_files = [p for d in dirs for p in sorted(d.glob("*/run.json"))]
     for run_json in run_files:
         if run_json.parent.name in seen:
             continue

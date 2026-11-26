@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TitrateRL — Project Status, Week 12</title>
+<style>
+@page { size: A4; margin: 17mm 17mm 17mm 17mm; }
+:root { --navy:#1B1F3B; --coral:#B4432A; --teal:#0A6F79; --muted:#4A5068; --line:#DCD5C8; --soft:#F4F1EA; }
+body { font-family: "DejaVu Sans", "Liberation Sans", Arial, sans-serif; font-size: 10pt; line-height: 1.48; color:#23273F; background:#fff; margin:0; }
+h1 { font-size: 21pt; color: var(--navy); margin: 0 0 4pt; line-height:1.2; }
+h2 { font-size: 13.5pt; color: var(--navy); margin: 16pt 0 6pt; border-bottom: 1.5pt solid var(--coral); padding-bottom: 3pt; page-break-after: avoid; }
+h3 { font-size: 11pt; color: var(--navy); margin: 10pt 0 4pt; page-break-after: avoid; }
+p { margin: 4pt 0 6pt; }
+.sub { color: var(--muted); font-size: 11pt; margin-bottom: 8pt; }
+.meta { font-size: 9pt; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 9pt; page-break-inside: avoid; }
+th, td { border: 0.6pt solid var(--line); padding: 3.5pt 6pt; text-align: left; vertical-align: top; }
+th { background: var(--soft); color: var(--navy); }
+.box { background: var(--soft); border-left: 3pt solid var(--teal); padding: 6pt 10pt; margin: 8pt 0; page-break-inside: avoid; }
+.warn { border-left-color: var(--coral); }
+code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.6pt; background:#F2EFE8; padding: 0 2pt; }
+ul, ol { margin: 3pt 0 7pt 0; padding-left: 16pt; }
+li { margin: 2pt 0; }
+.ok { color: var(--teal); font-weight: bold; }
+.bad { color: var(--coral); font-weight: bold; }
+.cover { border-bottom: 2pt solid var(--navy); padding-bottom: 8pt; margin-bottom: 8pt; }
+.lang { display:inline-block; background: var(--navy); color:#fff; font-size: 9pt; font-weight: bold; padding: 2pt 8pt; border-radius: 3pt; margin-bottom: 6pt; }
+.pb { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<!-- ======================= ENGLISH ======================= -->
+<div class="cover">
+<span class="lang">ENGLISH</span>
+<h1>TitrateRL — Project Status Report (Week 12)</h1>
+<p class="sub">What has been done, the Week 12 task and its outcome, results, and the plan to the end of the course</p>
+<p class="meta">4-SRC-10-804 Scientific Research and Communication · Central Asian University · Supervisor: Dr. Eugene Castro<br>
+Team: Boburmirzo Uchqunov (240447), Nodirjon Khabibullaev (230019), Ibrohim Abralov (230129), Abdurashid Abdusattarov (221229)<br>
+Status as of 25 November 2026 · Repository: github.com/Nodirjn/TitrateRL · In silico research only, not medical advice</p>
+</div>
+
+<h2>1. The project in one paragraph</h2>
+<p>People with Type 2 diabetes who start basal insulin (glargine) must adjust the daily dose for weeks until fasting glucose reaches the target. Today this is done with simple clinical rules (AT.LANTUS, Treat-to-Target, INSIGHT). We ask whether a <b>reinforcement learning (RL) agent</b> can titrate the dose better and as safely. We cannot test this on people, so we built a simulator of 150 virtual patients (Dalla Man T2D model with glargine absorption), trained PPO agents in it, and compared them with the clinical rules on 30 virtual patients the agents never saw.</p>
+
+<h2>2. What we measure and which methods we use</h2>
+<table>
+<tr><th style="width:26%">Item</th><th>Content</th></tr>
+<tr><td>Main metric</td><td><b>TIR</b>: share of time with glucose 70–180 mg/dL in weeks 21–24 (maintenance phase), from noise-free plasma glucose. Higher is better.</td></tr>
+<tr><td>Safety metrics</td><td><b>TBR&lt;70</b> and <b>TBR&lt;54</b>: time below 70 and below 54 mg/dL (hypoglycemia). Lower is better. Consensus targets: TBR&lt;70 &lt; 4 %, TBR&lt;54 &lt; 1 %.</td></tr>
+<tr><td>Environment</td><td>One step = one day, 168 days (24 weeks). Action: change the dose by −4, −2, 0, +2 or +4 U. Hard limits for every policy: ≤ 8 U increase per 7 days, ≤ 1 U/kg.</td></tr>
+<tr><td>Algorithm</td><td><b>PPO</b> (Proximal Policy Optimization, Stable-Baselines3), 33 input features, 64×64 network.</td></tr>
+<tr><td>Rewards</td><td>R1 = TIR; R2 = negative glucose risk index; R3 = TIR − 5·TBR&lt;70 − 10·TBR&lt;54.</td></tr>
+<tr><td>Safety shield</td><td>After a low (&lt; 70) no dose increase; after a severe low (&lt; 54) the dose is cut by 20 %.</td></tr>
+<tr><td>Comparators</td><td>B0 fixed dose, B1 AT.LANTUS, B2 Treat-to-Target, B3 INSIGHT.</td></tr>
+<tr><td>Statistics</td><td>Common random numbers (same meals and sensor noise for every policy), 95 % bootstrap CIs, Wilcoxon signed-rank tests, Holm correction, Hodges–Lehmann effect sizes, Spearman correlation.</td></tr>
+</table>
+
+<h2>3. What has been done so far (Weeks 1–12)</h2>
+<table>
+<tr><th style="width:12%">Weeks</th><th>Work</th><th style="width:13%">Status</th></tr>
+<tr><td>1–3</td><td>Requirements, architecture, GitHub repository with CI; T2D patient model (15 equations), glargine model, fast integrator, cross-check with simglucose</td><td class="ok">Done</td></tr>
+<tr><td>4–6</td><td>Cohort of 150 virtual patients (90 train / 30 validation / 30 test); Gymnasium environment; safety shield; clinical rules B0–B4; simulator checks V1–V5</td><td class="ok">Done</td></tr>
+<tr><td>7–8</td><td>PPO agents with R1–R3; reward selection rule</td><td class="ok">Done</td></tr>
+<tr><td>9–10</td><td>Evaluation pipeline and statistics; Streamlit dashboard; IEEE paper draft; mid-term presentation</td><td class="ok">Done</td></tr>
+<tr><td>11</td><td>12 system tests; 5 pilot agents; pilot test-cohort evaluation; Week 11 slides and live demo; overview PDF</td><td class="ok">Done</td></tr>
+<tr><td>12</td><td>Full training protocol (20 runs); final test-cohort evaluation; V4 explained; robustness test; system tests re-run; dashboard and demo updated</td><td class="ok">Done</td></tr>
+<tr><td>13–14</td><td>RQ3 analyses, final IMRaD paper, model card, v1.0 release</td><td>Next</td></tr>
+</table>
+
+<h2>4. Week 12 task and what happened</h2>
+<div class="box">
+<b>Task (from the instructor):</b> “Progress Reporting, we are now on Week 12. Make sure to bring your laptop with your actual project. Present also plan and outcome for System Testing and Evaluation.”
+</div>
+<table>
+<tr><th style="width:36%">Required</th><th>What we have</th><th style="width:11%">Status</th></tr>
+<tr><td>Progress report</td><td>This document plus an 11-slide Week 12 deck with speaker notes for every member</td><td class="ok">Ready</td></tr>
+<tr><td>Laptop with the actual project</td><td>Code on GitHub (branch <code>feat/week12-full-protocol</code>); <code>DEMO.md</code> gives the live demo script, who shows what, and likely evaluator questions</td><td class="ok">Ready</td></tr>
+<tr><td>Plan for System Testing and Evaluation</td><td>Four steps fixed in advance: (1) system tests, (2) simulator validity, (3) full training, (4) evaluation on unseen patients</td><td class="ok">Ready</td></tr>
+<tr><td>Outcome of System Testing and Evaluation</td><td>All four steps were carried out; results are in Section 5</td><td class="ok">Done</td></tr>
+</table>
+
+<h2>5. Results</h2>
+<h3>5.1 System testing (Boburmirzo)</h3>
+<p><b>11 of 12 system tests pass.</b> 92 unit and integration tests pass; one 24-week episode takes 0.20 s; same seed gives identical results; every policy sees the same meals; no policy ever exceeded +8 U per week or 1 U/kg; the shield works; all 21 trained agents load and run; the dashboard re-runs 3 policies × 24 weeks in 0.63 s. The only failure is ST-03 (check V4), kept failing on purpose because the criterion was fixed in advance.</p>
+
+<h3>5.2 Simulator validity, check V4 (Ibrohim)</h3>
+<p>V4 replays the Treat-to-Target clinical trial. In our main cohort, virtual patients do better than real ones (week-24 fasting glucose 99.6 vs 117 mg/dL). We tested 27 settings: a wider spread of insulin sensitivity does not close the gap, but <b>missed injections do</b>. With median sensitivity 3.0 and 15 % missed doses, V4 passes (fasting glucose 111.2 mg/dL, dose 0.53 U/kg, 32 % reach ≤ 100 mg/dL; trial: 117, 0.48, 36 %). Decision: keep the main cohort frozen, use this “calibrated world” as a robustness test.</p>
+
+<h3>5.3 Full training (Abdurashid)</h3>
+<p>20 runs: PPO with R1, R2, R3 (no shield) and R★ + shield, 5 seeds each, 10⁶ simulated days per run. The pre-registered rule (highest validation TIR among rewards where ≥ 90 % of patients meet the hypoglycemia targets) gave <b>R★ = R1</b>: R1 60.7 % / 97 %, R2 60.5 % / 93 %, R3 59.5 % / 100 %.</p>
+
+<h3>5.4 Final evaluation on 30 unseen patients × 10 scenarios (Nodirjon)</h3>
+<table>
+<tr><th>Policy</th><th>TIR % (95 % CI)</th><th>TBR&lt;70</th><th>TBR&lt;54</th><th>Meets targets</th></tr>
+<tr><td>PPO R1</td><td>59.3 (54.2–67.1)</td><td>0.5 %</td><td>0.0 %</td><td>97 %</td></tr>
+<tr><td>PPO R2</td><td>58.5 (53.4–65.7)</td><td>0.4 %</td><td>0.0 %</td><td>90 %</td></tr>
+<tr><td><b>PPO R★ + shield (primary)</b></td><td><b>58.0 (52.9–66.0)</b></td><td><b>0.4 %</b></td><td><b>0.0 %</b></td><td><b>100 %</b></td></tr>
+<tr><td>PPO R3</td><td>55.3 (52.5–62.4)</td><td>0.0 %</td><td>0.0 %</td><td>100 %</td></tr>
+<tr><td>B2 Treat-to-Target</td><td>55.1 (51.4–63.0)</td><td>0.0 %</td><td>0.0 %</td><td>100 %</td></tr>
+<tr><td>B3 INSIGHT</td><td>54.6 (49.8–62.2)</td><td>0.0 %</td><td>0.0 %</td><td>100 %</td></tr>
+<tr><td>B1 AT.LANTUS</td><td>54.1 (49.2–60.8)</td><td>0.0 %</td><td>0.0 %</td><td>100 %</td></tr>
+<tr><td>B0 fixed dose</td><td>35.0 (21.2–53.2)</td><td>0.0 %</td><td>0.0 %</td><td>100 %</td></tr>
+</table>
+
+<h3>5.5 Hypotheses (fixed before seeing test data)</h3>
+<table>
+<tr><th style="width:9%"></th><th>Hypothesis</th><th style="width:33%">Result</th><th style="width:16%">Verdict</th></tr>
+<tr><td>H1</td><td>R3 reduces hypoglycemia vs R1 at a TIR cost ≤ 5 pp</td><td>TBR 0.5 % → 0.0 %, p &lt; 0.001; TIR loss 4.0 pp</td><td class="ok">Supported</td></tr>
+<tr><td>H2</td><td>Shielded PPO gains ≥ 5 pp TIR over B1–B3 and is not worse on hypoglycemia (1 pp margin)</td><td>Gain 2.2–3.8 pp (significant, p &lt; 0.001); hypoglycemia non-inferior</td><td class="bad">Not supported (gain &lt; 5 pp)</td></tr>
+<tr><td>H3</td><td>The gain grows as insulin sensitivity falls</td><td>ρ = −0.18, p = 0.17</td><td class="bad">Not supported</td></tr>
+</table>
+
+<h3>5.6 Robustness: patients who miss doses</h3>
+<p>In the calibrated world (more sensitive patients, 15 % missed injections, no retraining) the TIR advantage of RL disappears (gain over Treat-to-Target −0.1 pp). Agents <b>without</b> the shield leave 17–37 % of patients above the hypoglycemia targets; the <b>shielded agent keeps all patients within them</b>. The safety layer is essential.</p>
+
+<div class="box"><b>Main message.</b> RL improves time in range by 2–4 percentage points over guideline rules with very little hypoglycemia, but less than the 5 pp we set as clinically meaningful. When patients miss injections, the benefit vanishes and only the safety shield keeps dosing safe.</div>
+
+<h2>6. Overall plan to the end of the course</h2>
+<table>
+<tr><th style="width:12%">Week</th><th>Work</th><th style="width:26%">Responsible</th></tr>
+<tr><td>13</td><td>RQ3 analyses: correlation with insulin sensitivity, dose behaviour of agents, validation vs test gap; Results section of the paper</td><td>Nodirjon, Abdurashid</td></tr>
+<tr><td>13</td><td>Extra robustness scenarios; simulator section of the paper</td><td>Ibrohim</td></tr>
+<tr><td>14</td><td>Final IMRaD paper, model card, user guide, v1.0 release, final presentation</td><td>All; release: Boburmirzo</td></tr>
+</table>
+<div class="box warn"><b>To do now:</b>
+<ol>
+<li>Merge pull request #1 (Week 11) after a teammate approves; then #2 (Week 12) automatically targets <code>main</code> and can be merged.</li>
+<li>Before class: <code>git pull</code>, switch to <code>feat/week12-full-protocol</code>, run <code>titraterl system-test</code> and <code>titraterl dashboard</code> once.</li>
+<li>Share the Week 12 slides with teammates from the Share menu.</li>
+</ol></div>
+<p class="meta">Detailed sources in the repository: <code>docs/results/full_protocol.md</code>, <code>docs/testing/system_test_report.md</code>, <code>docs/validation.md</code>, <code>DEMO.md</code>.</p>
+
+<!-- ======================= UZBEK ======================= -->
+<div class="cover pb">
+<span class="lang">O‘ZBEKCHA</span>
+<h1>TitrateRL — loyiha holati bo‘yicha hisobot (12-hafta)</h1>
+<p class="sub">Nimalar qilindi, 12-hafta topshirig‘i va uning natijasi, natijalar va kurs oxirigacha reja</p>
+<p class="meta">4-SRC-10-804 Scientific Research and Communication · Central Asian University · Rahbar: Dr. Eugene Castro<br>
+Jamoa: Boburmirzo Uchqunov (240447), Nodirjon Khabibullaev (230019), Ibrohim Abralov (230129), Abdurashid Abdusattarov (221229)<br>
+Holat: 2026-yil 25-noyabr · Repozitoriya: github.com/Nodirjn/TitrateRL · Faqat in silico tadqiqot, tibbiy maslahat emas</p>
+</div>
+
+<h2>1. Loyiha bir paragrafda</h2>
+<p>2-tip diabet bilan og‘rigan va bazal insulin (glargin) boshlagan bemor qondagi och qoringa glyukoza maqsadga yetguncha kunlik dozani haftalar davomida o‘zgartirib boradi. Bugun bu oddiy klinik qoidalar bilan qilinadi (AT.LANTUS, Treat-to-Target, INSIGHT). Biz <b>mustahkamlab o‘rganish (RL) agenti</b> dozani yaxshiroq va xuddi shunday xavfsiz tanlay oladimi, degan savolga javob qidiramiz. Buni odamlarda sinab bo‘lmaydi, shuning uchun 150 ta virtual bemordan iborat simulyator qurdik (Dalla Man T2D modeli va glargin so‘rilishi), unda PPO agentlarini o‘qitdik va ularni agentlar hech qachon ko‘rmagan 30 ta virtual bemorda klinik qoidalar bilan taqqosladik.</p>
+
+<h2>2. Nimani o‘lchaymiz va qaysi usullardan foydalanamiz</h2>
+<table>
+<tr><th style="width:26%">Nima</th><th>Mazmuni</th></tr>
+<tr><td>Asosiy ko‘rsatkich</td><td><b>TIR</b>: 21–24-haftalarda (davolashni ushlab turish bosqichi) glyukoza 70–180 mg/dL oralig‘ida bo‘lgan vaqt ulushi, shovqinsiz plazma glyukozasidan. Qancha yuqori bo‘lsa, shuncha yaxshi.</td></tr>
+<tr><td>Xavfsizlik ko‘rsatkichlari</td><td><b>TBR&lt;70</b> va <b>TBR&lt;54</b>: glyukoza 70 va 54 mg/dL dan past bo‘lgan vaqt (gipoglikemiya). Qancha past bo‘lsa, shuncha yaxshi. Konsensus maqsadlari: TBR&lt;70 &lt; 4 %, TBR&lt;54 &lt; 1 %.</td></tr>
+<tr><td>Muhit</td><td>Bir qadam = bir kun, 168 kun (24 hafta). Harakat: dozani −4, −2, 0, +2 yoki +4 birlikka o‘zgartirish. Har qanday siyosat uchun qat’iy chegara: 7 kunda ko‘pi bilan +8 birlik, ko‘pi bilan 1 birlik/kg.</td></tr>
+<tr><td>Algoritm</td><td><b>PPO</b> (Proximal Policy Optimization, Stable-Baselines3), 33 ta kirish belgisi, 64×64 neyron tarmoq.</td></tr>
+<tr><td>Mukofot funksiyalari</td><td>R1 = TIR; R2 = glyukoza xavf indeksining manfiysi; R3 = TIR − 5·TBR&lt;70 − 10·TBR&lt;54.</td></tr>
+<tr><td>Xavfsizlik shield’i</td><td>Gipoglikemiyadan (&lt; 70) keyin doza oshirilmaydi; og‘ir gipoglikemiyadan (&lt; 54) keyin doza 20 % kamaytiriladi.</td></tr>
+<tr><td>Taqqoslash usullari</td><td>B0 qat’iy doza, B1 AT.LANTUS, B2 Treat-to-Target, B3 INSIGHT.</td></tr>
+<tr><td>Statistika</td><td>Umumiy tasodifiy sonlar (har bir siyosat uchun bir xil ovqat va sensor shovqini), 95 % bootstrap ishonch oraliqlari, Wilcoxon testi, Holm tuzatishi, Hodges–Lehmann effekt o‘lchami, Spearman korrelyatsiyasi.</td></tr>
+</table>
+
+<h2>3. Hozirgacha nimalar qilindi (1–12-haftalar)</h2>
+<table>
+<tr><th style="width:12%">Haftalar</th><th>Ish</th><th style="width:13%">Holat</th></tr>
+<tr><td>1–3</td><td>Talablar, arxitektura, CI bilan GitHub repozitoriyasi; T2D bemor modeli (15 tenglama), glargin modeli, tez integrator, simglucose bilan solishtirish</td><td class="ok">Bajarildi</td></tr>
+<tr><td>4–6</td><td>150 ta virtual bemor kohortasi (90 o‘qitish / 30 validatsiya / 30 test); Gymnasium muhiti; xavfsizlik shield’i; B0–B4 klinik qoidalar; V1–V5 simulyator tekshiruvlari</td><td class="ok">Bajarildi</td></tr>
+<tr><td>7–8</td><td>R1–R3 bilan PPO agentlari; mukofotni tanlash qoidasi</td><td class="ok">Bajarildi</td></tr>
+<tr><td>9–10</td><td>Baholash konveyeri va statistika; Streamlit dashboard; IEEE maqola qoralamasi; oraliq taqdimot</td><td class="ok">Bajarildi</td></tr>
+<tr><td>11</td><td>12 ta system test; 5 ta pilot agent; test kohortasida pilot baholash; 11-hafta slaydlari va jonli demo; umumiy reja PDF</td><td class="ok">Bajarildi</td></tr>
+<tr><td>12</td><td>To‘liq o‘qitish protokoli (20 ta run); yakuniy baholash; V4 tushuntirildi; robustlik testi; system testlar qayta o‘tkazildi; dashboard va demo yangilandi</td><td class="ok">Bajarildi</td></tr>
+<tr><td>13–14</td><td>RQ3 tahlillari, yakuniy IMRaD maqola, model kartasi, v1.0 relizi</td><td>Keyingi</td></tr>
+</table>
+
+<h2>4. 12-hafta topshirig‘i va uning natijasi</h2>
+<div class="box">
+<b>Topshiriq (o‘qituvchidan):</b> “Progress Reporting, we are now on Week 12. Make sure to bring your laptop with your actual project. Present also plan and outcome for System Testing and Evaluation.” Ya’ni: 12-hafta progress hisoboti; laptopda haqiqiy loyihani olib kelish; System Testing va Evaluation bosqichining rejasi va natijasini taqdim etish.
+</div>
+<table>
+<tr><th style="width:36%">Talab</th><th>Bizda nima bor</th><th style="width:12%">Holat</th></tr>
+<tr><td>Progress hisoboti</td><td>Ushbu hujjat va 11 slayddan iborat 12-hafta taqdimoti (har bir a’zo uchun nutq matni bilan)</td><td class="ok">Tayyor</td></tr>
+<tr><td>Laptopda haqiqiy loyiha</td><td>Kod GitHub’da (<code>feat/week12-full-protocol</code> branch’i); <code>DEMO.md</code> da jonli demo ssenariysi, kim nimani ko‘rsatishi va ehtimoliy savollar bor</td><td class="ok">Tayyor</td></tr>
+<tr><td>System Testing va Evaluation rejasi</td><td>Oldindan belgilangan 4 qadam: (1) system testlar, (2) simulyator to‘g‘riligi, (3) to‘liq o‘qitish, (4) ko‘rilmagan bemorlarda baholash</td><td class="ok">Tayyor</td></tr>
+<tr><td>System Testing va Evaluation natijasi</td><td>To‘rttala qadam bajarildi; natijalar 5-bo‘limda</td><td class="ok">Bajarildi</td></tr>
+</table>
+
+<h2>5. Natijalar</h2>
+<h3>5.1 System testlar (Boburmirzo)</h3>
+<p><b>12 ta testdan 11 tasi o‘tdi.</b> 92 ta unit va integratsion test o‘tadi; bitta 24 haftalik epizod 0,20 soniya oladi; bir xil seed bir xil natija beradi; har bir siyosat bir xil ovqatni ko‘radi; hech bir siyosat haftasiga +8 birlik yoki 1 birlik/kg chegarasidan oshmadi; shield ishlaydi; 21 ta o‘qitilgan agentning hammasi yuklanadi va ishlaydi; dashboard 3 ta siyosatni 24 hafta uchun 0,63 soniyada qayta hisoblaydi. Yagona muvaffaqiyatsiz test ST-03 (V4 tekshiruvi); mezon oldindan belgilangani uchun uni ataylab yumshatmadik.</p>
+
+<h3>5.2 Simulyator to‘g‘riligi, V4 tekshiruvi (Ibrohim)</h3>
+<p>V4 Treat-to-Target klinik sinovini simulyatorda takrorlaydi. Asosiy kohortada virtual bemorlar haqiqiy bemorlardan yaxshiroq natija ko‘rsatadi (24-haftada och qoringa glyukoza 99,6 ga qarshi 117 mg/dL). 27 ta sozlamani sinadik: insulin sezgirligining tarqoqligini oshirish farqni yopmaydi, lekin <b>ukollarni o‘tkazib yuborish yopadi</b>. Sezgirlik medianasi 3,0 va ukollarning 15 % i o‘tkazib yuborilganda V4 o‘tadi (glyukoza 111,2 mg/dL, doza 0,53 birlik/kg, 32 % bemor ≤ 100 mg/dL ga yetadi; sinovda: 117, 0,48, 36 %). Qaror: asosiy kohorta o‘zgarmaydi, bu “kalibrlangan dunyo” robustlik testi sifatida ishlatiladi.</p>
+
+<h3>5.3 To‘liq o‘qitish (Abdurashid)</h3>
+<p>20 ta run: R1, R2, R3 bilan PPO (shield’siz) va R★ + shield, har biri 5 seed, har bir run 10⁶ simulyatsiya kuni. Oldindan ro‘yxatga olingan qoida (gipoglikemiya maqsadlarini bemorlarning ≥ 90 % i bajargan mukofotlar orasida validatsiya TIR eng yuqorisi) <b>R★ = R1</b> ni berdi: R1 60,7 % / 97 %, R2 60,5 % / 93 %, R3 59,5 % / 100 %.</p>
+
+<h3>5.4 Ko‘rilmagan 30 ta bemor × 10 stsenariyda yakuniy baholash (Nodirjon)</h3>
+<table>
+<tr><th>Siyosat</th><th>TIR % (95 % IO)</th><th>TBR&lt;70</th><th>TBR&lt;54</th><th>Maqsadni bajargan</th></tr>
+<tr><td>PPO R1</td><td>59,3 (54,2–67,1)</td><td>0,5 %</td><td>0,0 %</td><td>97 %</td></tr>
+<tr><td>PPO R2</td><td>58,5 (53,4–65,7)</td><td>0,4 %</td><td>0,0 %</td><td>90 %</td></tr>
+<tr><td><b>PPO R★ + shield (asosiy)</b></td><td><b>58,0 (52,9–66,0)</b></td><td><b>0,4 %</b></td><td><b>0,0 %</b></td><td><b>100 %</b></td></tr>
+<tr><td>PPO R3</td><td>55,3 (52,5–62,4)</td><td>0,0 %</td><td>0,0 %</td><td>100 %</td></tr>
+<tr><td>B2 Treat-to-Target</td><td>55,1 (51,4–63,0)</td><td>0,0 %</td><td>0,0 %</td><td>100 %</td></tr>
+<tr><td>B3 INSIGHT</td><td>54,6 (49,8–62,2)</td><td>0,0 %</td><td>0,0 %</td><td>100 %</td></tr>
+<tr><td>B1 AT.LANTUS</td><td>54,1 (49,2–60,8)</td><td>0,0 %</td><td>0,0 %</td><td>100 %</td></tr>
+<tr><td>B0 qat’iy doza</td><td>35,0 (21,2–53,2)</td><td>0,0 %</td><td>0,0 %</td><td>100 %</td></tr>
+</table>
+
+<h3>5.5 Gipotezalar (test ma’lumotlarini ko‘rishdan oldin belgilangan)</h3>
+<table>
+<tr><th style="width:9%"></th><th>Gipoteza</th><th style="width:33%">Natija</th><th style="width:17%">Xulosa</th></tr>
+<tr><td>H1</td><td>R3 gipoglikemiyani R1 ga nisbatan kamaytiradi, TIR yo‘qotish ≤ 5 pp</td><td>TBR 0,5 % → 0,0 %, p &lt; 0,001; TIR yo‘qotish 4,0 pp</td><td class="ok">Qo‘llab-quvvatlandi</td></tr>
+<tr><td>H2</td><td>Shield’li PPO B1–B3 dan TIR bo‘yicha ≥ 5 pp yaxshi va gipoglikemiya bo‘yicha yomon emas (1 pp chegara)</td><td>Ustunlik 2,2–3,8 pp (ahamiyatli, p &lt; 0,001); gipoglikemiya bo‘yicha yomon emas</td><td class="bad">Qo‘llab-quvvatlanmadi (&lt; 5 pp)</td></tr>
+<tr><td>H3</td><td>Insulin sezgirligi past bemorlarda ustunlik kattaroq</td><td>ρ = −0,18, p = 0,17</td><td class="bad">Qo‘llab-quvvatlanmadi</td></tr>
+</table>
+
+<h3>5.6 Robustlik: ukolni o‘tkazib yuboradigan bemorlar</h3>
+<p>Kalibrlangan dunyoda (sezgirroq bemorlar, ukollarning 15 % i o‘tkazib yuboriladi, agentlar qayta o‘qitilmagan) RL ning TIR bo‘yicha ustunligi yo‘qoladi (Treat-to-Target ga nisbatan −0,1 pp). Shield’<b>siz</b> agentlarda bemorlarning 17–37 % i gipoglikemiya maqsadlaridan chiqib ketadi; <b>shield’li agent esa hamma bemorni maqsad ichida saqlaydi</b>. Xavfsizlik qatlami zarur.</p>
+
+<div class="box"><b>Asosiy xulosa.</b> RL klinik qoidalarga nisbatan diapazondagi vaqtni 2–4 foiz punktga oshiradi va gipoglikemiya juda kam bo‘ladi, lekin bu biz klinik ahamiyatli deb belgilagan 5 pp dan kam. Bemorlar ukollarni o‘tkazib yuborganda ustunlik yo‘qoladi va faqat xavfsizlik shield’i dozalashni xavfsiz saqlaydi.</div>
+
+<h2>6. Kurs oxirigacha umumiy reja</h2>
+<table>
+<tr><th style="width:12%">Hafta</th><th>Ish</th><th style="width:26%">Mas’ul</th></tr>
+<tr><td>13</td><td>RQ3 tahlillari: insulin sezgirligi bilan bog‘liqlik, agentlarning dozani o‘zgartirish xatti-harakati, validatsiya va test orasidagi farq; maqolaning Results bo‘limi</td><td>Nodirjon, Abdurashid</td></tr>
+<tr><td>13</td><td>Qo‘shimcha robustlik stsenariylari; maqolaning simulyator bo‘limi</td><td>Ibrohim</td></tr>
+<tr><td>14</td><td>Yakuniy IMRaD maqola, model kartasi, foydalanuvchi qo‘llanmasi, v1.0 relizi, yakuniy taqdimot</td><td>Hammasi; reliz: Boburmirzo</td></tr>
+</table>
+<div class="box warn"><b>Hozir qilinishi kerak:</b>
+<ol>
+<li>PR #1 (11-hafta) ni jamoadosh tasdiqlagach birlashtiring; shundan keyin PR #2 (12-hafta) avtomatik ravishda <code>main</code> ga yo‘naltiriladi va uni ham birlashtirish mumkin.</li>
+<li>Darsdan oldin: <code>git pull</code>, <code>feat/week12-full-protocol</code> branch’iga o‘ting, <code>titraterl system-test</code> va <code>titraterl dashboard</code> ni bir marta ishga tushirib ko‘ring.</li>
+<li>12-hafta slaydlarini Share menyusi orqali jamoadoshlarga ulashing.</li>
+</ol></div>
+<p class="meta">Batafsil manbalar repozitoriyada: <code>docs/results/full_protocol.md</code>, <code>docs/testing/system_test_report.md</code>, <code>docs/validation.md</code>, <code>DEMO.md</code>.</p>
+
+</body>
+</html>

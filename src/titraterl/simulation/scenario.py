@@ -55,11 +55,22 @@ class ScenarioConfig:
     timing_jitter_h: float = 0.0
     skip_probability: float = 0.0
     meal_duration_min: int = 10
+    missed_injection_prob: float = 0.0
+    """Probability that the bedtime injection of a day is missed (non-adherence).
+
+    Drawn from its own random stream, so meals and sensor noise are unchanged and
+    common random numbers still hold. 0 (default) reproduces the main protocol.
+    """
 
     @classmethod
     def robustness(cls) -> ScenarioConfig:
         """Wider timing variability and skipped meals (secondary analyses)."""
         return cls(timing_jitter_h=1.0, skip_probability=0.1)
+
+    @classmethod
+    def nonadherent(cls, missed_injection_prob: float = 0.1) -> ScenarioConfig:
+        """Default meals with randomly missed injections (V4 sensitivity, robustness)."""
+        return cls(missed_injection_prob=missed_injection_prob)
 
 
 @dataclass
