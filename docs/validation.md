@@ -61,6 +61,49 @@ sulfonylurea, which is not modeled.
 4. report and attribute the remaining deviation; only deviations attributable to physiology are
    used to adjust the cohort.
 
+## V4 sensitivity analysis (Week 12)
+
+The main cohort is **frozen**: all agents of the full protocol are trained on it, and changing it
+now would invalidate the training runs. Instead, `scripts/v4_sensitivity.py` asks which of the
+idealizations of the simulator explains the gap to the trial. It varies the median and the spread
+of `ρ_SI` and a new scenario option, `ScenarioConfig.missed_injection_prob` (the bedtime
+injection of a day is skipped with this probability; own random stream, so meals and sensor noise
+stay identical). Treat-to-Target on the 90 training patients, 24 weeks:
+
+| median ρ_SI | σ | missed injections | week-24 FPG | final dose (U/kg) | FPG ≤ 100 | V4 |
+|---|---|---|---|---|---|---|
+| 2.2 | 0.35 | 0 % (main protocol) | 99.6 | 0.57 | 56 % | ❌ |
+| 2.2 | 0.50 | 0 % | 100.8 | 0.59 | 53 % | ❌ |
+| 2.2 | 0.70 | 0 % | 104.1 | 0.60 | 52 % | ❌ |
+| 2.2 | 0.35 | 10 % | 105.9 | 0.61 | 39 % | ❌ |
+| 2.2 | 0.35 | 20 % | 110.8 | 0.65 | 29 % | ❌ (dose) |
+| 2.6 | 0.35 | 20 % | 112.6 | 0.59 | 28 % | ✅ |
+| 3.0 | 0.35 | 15 % | 111.2 | 0.53 | 32 % | ✅ |
+| 3.0 | 0.35 | 20 % | 113.9 | 0.55 | 27 % | ✅ |
+| 3.0 | 0.50 | 20 % | 115.0 | 0.56 | 27 % | ✅ |
+| trial | | | 117 | 0.48 | 36 % | |
+
+Full grids: [`docs/results/v4_sensitivity.csv`](results/v4_sensitivity.csv), [`docs/results/v4_sensitivity_joint.csv`](results/v4_sensitivity_joint.csv)
+(`python scripts/v4_sensitivity.py --medians 2.6 3.0 --sigmas 0.35 0.5 --missed 0.15 0.2`).
+
+**Findings.**
+
+1. The spread of insulin sensitivity alone does not explain the gap (week-24 FPG ≤ 104 mg/dL).
+2. **Non-adherence does.** With 15–20 % missed injections the fasting glucose plateaus at
+   110–116 mg/dL and only 26–33 % of patients reach ≤ 100 mg/dL, as in the trial. The dose then
+   rises slightly above the trial range, which a higher insulin sensitivity (median 2.6–3.0)
+   compensates; with median 3.0, σ 0.35 and 15 % missed injections all three V4 criteria pass.
+3. The main protocol (perfect adherence) is therefore an **optimistic** world: every titration
+   step reaches the patient. This is the most likely reason why the clinical algorithms produce
+   almost no hypoglycemia and reach the fasting target easily.
+
+**Decision.** The main results stay on the frozen cohort and are interpreted as relative
+comparisons (proposal rule). The calibrated world, *median ρ_SI 3.0, σ 0.35, 15 % missed
+injections*, is added as a pre-specified **sensitivity evaluation**
+(`configs/eval/test_calibrated.yaml`, Week 13): trained agents and baselines are evaluated on
+the test split of that cohort without retraining. It shows whether the ranking of the policies
+survives in a world that matches the trial.
+
 If V4 still fails at the end of Week 5, the proposal's rule applies: the remaining deviation is
 documented, results are interpreted as relative comparisons, and the decision is recorded at the
 sprint review. (The fallback model is reserved for V1–V2 failures.)

@@ -26,6 +26,7 @@ class DayResult:
     fasting_true: float  # noise-free plasma glucose at the end of the day (07:00)
     fasting_smbg: float  # fingerstick at the end of the day (07:00)
     meals: DayMeals
+    injected: bool = True  # False if the injection was missed (non-adherence scenario)
 
     @property
     def glucose_true_5min(self) -> np.ndarray:
@@ -59,8 +60,11 @@ class VirtualPatient:
         self.scenario = scenario or ScenarioConfig()
         self.meals_enabled = meals_enabled
         ss = np.random.SeedSequence(scenario_seed)
-        meal_ss, cgm_ss, smbg_ss = ss.spawn(3)
+        # spawn(4): the first three children are identical to those of spawn(3),
+        # so adding the adherence stream left meals and sensor noise unchanged.
+        meal_ss, cgm_ss, smbg_ss, adherence_ss = ss.spawn(4)
         self.meal_rng = np.random.default_rng(meal_ss)
+        self.adherence_rng = np.random.default_rng(adherence_ss)
         self.smbg_rng = np.random.default_rng(smbg_ss)
         self.cgm = CGMSensor(np.random.default_rng(cgm_ss), enabled=sensor_noise)
         self.sensor_noise = sensor_noise
@@ -84,7 +88,9 @@ class VirtualPatient:
         meals = generate_day(self.meal_rng, self.scenario)
         if not self.meals_enabled:
             meals = DayMeals(np.zeros_like(meals.cho_mg_min), np.zeros_like(meals.meal_start_mg), [])
-        amount = max(dose_u, 0.0) * PMOL_PER_UNIT / self.body_weight
+        p_miss = self.scenario.missed_injection_prob
+        injected = not (p_miss > 0.0 and self.adherence_rng.random() < p_miss)
+        amount = max(dose_u, 0.0) * PMOL_PER_UNIT / self.body_weight if injected else 0.0
         x, g_true, g_inter, self.d_meal = simulate_day(
             self.state,
             self.p,
@@ -98,6 +104,6 @@ class VirtualPatient:
         cgm = self.cgm.measure_day(g_inter)
         fasting = self.fasting_glucose
         smbg = smbg_reading(fasting, self.smbg_rng, self.sensor_noise)
-        result = DayResult(self.day, float(dose_u), g_true, cgm, fasting, smbg, meals)
+        result = DayResult(self.day, float(dose_u), g_true, cgm, fasting, smbg, meals, injected)
         self.day += 1
         return result

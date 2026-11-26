@@ -7,6 +7,7 @@ Commands:
     train       train a PPO/DQN agent from a YAML configuration
     evaluate    run the evaluation pipeline from a YAML configuration
     tune-b4     tune the simulator-tuned threshold rule B4
+    system-test run the system test suite against the MVP acceptance criteria
     dashboard   launch the Streamlit dashboard
 """
 
@@ -93,6 +94,15 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     from titraterl.evaluation.pipeline import run_pipeline
 
     cfg = EvalConfig.from_yaml(args.config)
+    if args.analyze_only:
+        import pandas as pd
+
+        from titraterl.evaluation.pipeline import run_analyses
+
+        out = Path(args.output_dir or cfg.output_dir)
+        report = run_analyses(cfg, pd.read_csv(out / "per_patient.csv"), out)
+        print(f"analyses rewritten from {out / 'per_patient.csv'}: {report}")
+        return 0
     if args.n_scenarios:
         cfg.n_scenarios = args.n_scenarios
     if args.output_dir:
@@ -111,6 +121,19 @@ def cmd_tune_b4(args: argparse.Namespace) -> int:
     table.to_csv(args.out, index=False)
     print(f"selected: {table.attrs['selected']} (table: {args.out})")
     return 0
+
+
+def cmd_system_test(args: argparse.Namespace) -> int:
+    import tempfile
+
+    from titraterl.validation.system_test import run_system_tests, write_reports
+
+    root = Path(__file__).resolve().parents[2]
+    with tempfile.TemporaryDirectory() as tmp:
+        results = run_system_tests(root, Path(args.runs), Path(tmp), include_unit=not args.skip_unit)
+    path = write_reports(results, Path(args.out))
+    print(f"report written to {path}")
+    return 0 if all(r.passed is not False for r in results) or not args.strict else 1
 
 
 def cmd_dashboard(args: argparse.Namespace) -> int:
@@ -156,6 +179,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("evaluate", help="run the evaluation pipeline")
     p.add_argument("--config", required=True)
     p.add_argument("--n-scenarios", type=int, default=None)
+    p.add_argument("--analyze-only", action="store_true", help="recompute statistics from per_patient.csv")
     p.add_argument("--output-dir", default=None)
     p.set_defaults(func=cmd_evaluate)
 
@@ -163,6 +187,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--cohort", default=None)
     p.add_argument("--out", default="results/b4_tuning.csv")
     p.set_defaults(func=cmd_tune_b4)
+
+    p = sub.add_parser("system-test", help="run the system test suite (Week 11)")
+    p.add_argument("--runs", default="runs", help="directory with trained agents")
+    p.add_argument("--out", default="reports")
+    p.add_argument("--skip-unit", action="store_true", help="do not run pytest (ST-01)")
+    p.add_argument("--strict", action="store_true", help="exit 1 if any test fails")
+    p.set_defaults(func=cmd_system_test)
 
     p = sub.add_parser("dashboard", help="launch the Streamlit dashboard")
     p.set_defaults(func=cmd_dashboard)

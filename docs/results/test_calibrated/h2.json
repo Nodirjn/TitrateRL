@@ -1,0 +1,41 @@
+[
+  {
+    "baseline": "b1_atlantus",
+    "n": 30,
+    "tir_gain_hl_pp": 1.846602182539686,
+    "tir_p_raw": 4.6566128730773926e-09,
+    "tir_p_holm": 1.3969838619232178e-08,
+    "tbr_diff_mean_pp": 1.0291253306878307,
+    "tbr_diff_ci_upper_pp": 1.1786378072641093,
+    "superior": true,
+    "clinically_meaningful": false,
+    "non_inferior": false,
+    "supported": false
+  },
+  {
+    "baseline": "b2_treat_to_target",
+    "n": 30,
+    "tir_gain_hl_pp": -0.11408730158730673,
+    "tir_p_raw": 0.6722807874903083,
+    "tir_p_holm": 0.6722807874903083,
+    "tbr_diff_mean_pp": 0.7303213183421516,
+    "tbr_diff_ci_upper_pp": 0.8794989045965607,
+    "superior": false,
+    "clinically_meaningful": false,
+    "non_inferior": true,
+    "supported": false
+  },
+  {
+    "baseline": "b3_insight",
+    "n": 30,
+    "tir_gain_hl_pp": 1.0178571428571426,
+    "tir_p_raw": 0.00011581834405660629,
+    "tir_p_holm": 0.00023163668811321259,
+    "tbr_diff_mean_pp": 0.989573688271605,
+    "tbr_diff_ci_upper_pp": 1.1272136794532626,
+    "superior": true,
+    "clinically_meaningful": false,
+    "non_inferior": false,
+    "supported": false
+  }
+]

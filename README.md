@@ -66,18 +66,27 @@ can titrate faster and more safely than these clinical rules. It provides:
 
 ## 2. Project status
 
-The project follows the 14-week plan of the proposal. **The software for every MVP feature
-is implemented and tested; the experiments (agent training, test-cohort evaluation) have not been
-run yet.** No research results exist so far.
+**Week 11 — System Testing and Evaluation.** The software for every MVP feature is implemented
+and passes 11 of 12 system tests ([docs/testing/system_test_report.md](docs/testing/system_test_report.md)).
+**Week 12 — full protocol.** All 20 PPO runs (R1, R2, R3 and shielded R★ = R1; five seeds,
+10⁶ days each) are trained and evaluated on the 30 held-out test patients
+([docs/results/full_protocol.md](docs/results/full_protocol.md)).
+
+**Result (in silico).** The primary policy (shielded PPO with R★ = R1) reached a median
+maintenance-phase TIR of 58.0 % versus 54.1–55.1 % for AT.LANTUS, Treat-to-Target and INSIGHT
+(significant after Holm adjustment, hypoglycemia non-inferior), but the gain of 2.2–3.8 pp is below
+the pre-specified 5 pp threshold (H2 not supported). R3 lowered hypoglycemia versus R1 at a 4.0 pp
+TIR cost (H1 supported). In a sensitivity world with missed injections the RL advantage vanishes,
+and only the shielded agent keeps every patient within the hypoglycemia targets.
 
 | Feature (proposal Table IX) | Status |
 |---|---|
-| F1 Simulator + calibrated cohort | ✅ implemented · ⚠️ calibration check V4 **not yet passed** (final dose ✅, fasting glucose too low), see [docs/validation.md](docs/validation.md) |
+| F1 Simulator + calibrated cohort | ✅ implemented · ⚠️ V4 fails in the main cohort (fasting glucose too low); explained by non-adherence and passed in a calibrated sensitivity world, see [docs/validation.md](docs/validation.md) |
 | F2 Gymnasium environment | ✅ passes `check_env`; one 168-day episode ≈ 0.15 s (target < 2 s) |
-| F3 Trained agents | ✅ training pipeline + configs · ⏳ runs not started (Weeks 7–10) |
+| F3 Trained agents | ✅ 20 full-protocol agents in [`models/full/`](models/full) (pilot agents in `models/pilot/`) |
 | F4 Rule-based policies B0–B4 | ✅ unit tests reproduce the published titration steps |
 | F5 Evaluation pipeline | ✅ one command regenerates tables, tests and figures |
-| F6 Interactive dashboard | ✅ implemented |
+| F6 Interactive dashboard | ✅ 3 policies × 24 weeks re-run in 0.7 s (target < 5 s); lists the pilot agents |
 | F7 Installable package | ✅ `pip install -e .`, environment registered as `TitrateRL/T2D-v0` |
 
 Decision gate **G1** (simulator validation, end of Week 5): V1 ✅, V2 ✅, V3 documented, V4 ❌,
@@ -130,8 +139,14 @@ titraterl validate --out reports                     # simulator checks V1-V5 (g
 titraterl simulate --policy b1_atlantus --patient T2D-017
 titraterl train --config configs/train/smoke.yaml    # 1-minute smoke training run
 titraterl evaluate --config configs/eval/baselines_quick.yaml
-titraterl dashboard                                  # opens the Streamlit app
+titraterl system-test                                # system tests against the MVP criteria
+titraterl evaluate --config configs/eval/test_pilot.yaml   # Week 11 pilot evaluation (~6 min)
+titraterl evaluate --config configs/eval/test_full.yaml    # full protocol, 20 agents (~17 min, 2 cores)
+python scripts/run_protocol.py --phase 1 --lanes 2        # full training queue (resumable)
+titraterl dashboard                                  # opens the Streamlit app (pilot agents included)
 ```
+
+For the Week 11 live demo, follow [DEMO.md](DEMO.md).
 
 ### Python API
 
@@ -281,8 +296,13 @@ TitrateRL/
 ├── configs/               # cohort, training and evaluation YAML files
 ├── tests/                 # unit + integration tests (pytest)
 ├── docs/                  # architecture, model, environment, evaluation, validation, ...
-│   └── course/            # course reports (Week 10 IEEE report)
+│   ├── course/            # course reports (Week 10 IEEE report)
+│   ├── results/           # evaluation reports and figures (pilot, full protocol)
+│   └── testing/           # system test report
 ├── examples/              # quickstart script and notebook
+├── models/pilot/          # Week 11 pilot agents (Stable-Baselines3)
+├── models/full/           # Week 12 full-protocol agents (20 runs)
+├── DEMO.md                # Week 11 demo guide
 ├── .github/               # CI workflow, issue and pull-request templates
 ├── MODEL_CARD.md          # intended use and limitations
 └── pyproject.toml         # packaging, ruff, pytest configuration

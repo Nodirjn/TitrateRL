@@ -185,9 +185,17 @@ def check_v3() -> CheckResult:
 
 
 # ---------------------------------------------------------------------- V4
-def check_v4(cohort: Cohort, n_patients: int | None = None) -> CheckResult:
+def check_v4(cohort: Cohort, n_patients: int | None = None, scenario=None) -> CheckResult:
+    """Treat-to-Target on the training patients against the trial outcomes.
+
+    ``scenario`` (a ``ScenarioConfig``) is only used by the V4 sensitivity analysis,
+    e.g. with missed injections; the gate itself uses the default scenario.
+    """
     patients = cohort.split("train")[:n_patients] if n_patients else cohort.split("train")
-    df, res = evaluate([TreatToTarget()], cohort, patients, n_scenarios=1, keep_records=True)
+    env_kwargs = {"scenario": scenario} if scenario is not None else None
+    df, res = evaluate(
+        [TreatToTarget()], cohort, patients, n_scenarios=1, keep_records=True, env_kwargs=env_kwargs
+    )
     w24 = np.array([np.mean([r.fasting_true for r in e.records[-7:]]) for e in res])
     w12 = np.array([np.mean([r.fasting_true for r in e.records[77:84]]) for e in res])
     dose = float(df["final_dose_u_per_kg"].mean())

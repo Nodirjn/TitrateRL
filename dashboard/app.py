@@ -23,17 +23,30 @@ DISCLAIMER = (
     "**In silico simulation only.** TitrateRL is research software. It is not a medical "
     "device and must not be used to dose insulin for real people."
 )
-RUNS_DIR = Path("runs")
+ROOT = Path(__file__).resolve().parents[1]
+# Agents trained locally (runs/) and the released pilot agents committed to the repo (models/).
+# (directory, label suffix); full-protocol agents first, pilot agents keep a "(pilot)" label
+AGENT_DIRS = (
+    (ROOT / "models" / "full", ""),
+    (ROOT / "runs", ""),
+    (Path("runs"), ""),
+    (ROOT / "models" / "pilot", " (pilot)"),
+)
 
 
 def discover_checkpoints() -> dict[str, dict]:
-    """Trained agents saved by ``titraterl train`` (runs/<run_id>/best_model.zip)."""
-    found = {}
-    for run_json in sorted(RUNS_DIR.glob("*/run.json")):
-        model = run_json.parent / "best_model.zip"
-        if model.exists():
+    """Trained agents: ``<dir>/<run_id>/best_model.zip`` with its ``run.json``."""
+    found: dict[str, dict] = {}
+    seen: set[Path] = set()
+    for directory, suffix in AGENT_DIRS:
+        for run_json in sorted(directory.glob("*/run.json")):
+            model = run_json.parent / "best_model.zip"
+            name = run_json.parent.name + suffix
+            if run_json.resolve() in seen or name in found or not model.exists():
+                continue
+            seen.add(run_json.resolve())
             cfg = json.loads(run_json.read_text())["config"]
-            found[run_json.parent.name] = {
+            found[name] = {
                 "path": model,
                 "algo": cfg["algo"],
                 "obs_mode": cfg["obs_mode"],
@@ -93,7 +106,7 @@ def main() -> None:
         seed = st.number_input("Scenario seed", min_value=0, max_value=2**31 - 1, value=0, step=1)
         week = st.slider("Week to display (glucose trace)", 1, 24, 24)
         if not checkpoints:
-            st.caption("No trained agents found in runs/. Train one with `titraterl train`.")
+            st.caption("No trained agents found in runs/ or models/pilot/. Train one with `titraterl train`.")
 
     cp = cohort.get(patient_id)
     st.caption(

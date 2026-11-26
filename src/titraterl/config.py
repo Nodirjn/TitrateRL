@@ -118,6 +118,19 @@ class EvalConfig:
     output_dir: str = "results"
     log_trajectories: bool = False
     cohort: dict[str, Any] = field(default_factory=dict)
+    n_jobs: int = 1
+    h1_policies: list[str] = field(default_factory=list)  # [R1 policy id, R3 policy id]
+    h3_reference: str | None = None  # clinical algorithm for H3 (default: best median TIR of B1-B3)
+    pool_seeds: bool = False  # merge ppo_x_s0..s4 into ppo_x before the per-patient average
+    scenario: dict[str, Any] = field(default_factory=dict)  # ScenarioConfig overrides, e.g. missed injections
+
+    def env_kwargs(self) -> dict[str, Any] | None:
+        """Environment arguments of the evaluation (``None`` = main protocol scenario)."""
+        if not self.scenario:
+            return None
+        from titraterl.simulation.scenario import ScenarioConfig
+
+        return {"scenario": ScenarioConfig(**self.scenario)}
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> EvalConfig:
